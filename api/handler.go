@@ -20,6 +20,13 @@ func handler(w http.ResponseWriter, r *http.Request) {
 
 	// Show answer struct as a result of any request to API at the end, whatever the request or result is
 	defer func() {
+		// CORS for angular debugging
+		w.Header().Set("Access-Control-Allow-Credentials", "true")
+		w.Header().Set("Access-Control-Allow-Headers", "content-type")
+		w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS")
+		w.Header().Set("Access-Control-Allow-Origin", "http://localhost:4200")
+		w.Header().Set("Access-Control-Max-Age", "5")
+
 		// TODO: Для реальной работы использовать компактный вывод: json.Marshal
 		//data, err := json.Marshal(answer)
 		data, err := json.MarshalIndent(answer, " ", "   ")
