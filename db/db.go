@@ -47,6 +47,7 @@ var sqlDeclarations []string = []string{
 
 	`CREATE TABLE region (
     id            INTEGER PRIMARY KEY,
+    description   TEXT,
     project_id    INTEGER REFERENCES project(id) NOT NULL,
     tregion_id    INTEGER REFERENCES tregion(id) NOT NULL,
     nr            INTEGER )`,
@@ -182,7 +183,7 @@ const (
 )
 
 var MetaValues map[string]string = map[string]string{
-	MetaKeyVersion: "2018-03-13",
+	MetaKeyVersion: "2018-04-13",
 }
 
 // convertDB - convert DB from one version to another

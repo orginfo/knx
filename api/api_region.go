@@ -2,9 +2,108 @@ package api
 
 import (
 	"fmt"
+	"knx/calc"
 	"knx/db"
 	"strconv"
 )
+
+// ControlType - тип элемента управления в GUI
+type ControlType int
+
+const (
+	CTCheckBox ControlType = iota + 1
+	CTEditBox
+	CTNumericEditBox
+	CTChooseColorBtn
+	CTComboBox
+	CTEditableComboBox
+)
+
+///////////////////////////////////////////////////////////////////////////////
+// APIParamType
+
+type APIParamType struct {
+	ID          int    `json:"id,omitempty"`
+	Name        string `json:"name,omitempty"`
+	Description string `json:"description,omitempty"`
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// APIParamValue
+
+type APIParamValue struct {
+	Value float64 `json:"value,omitempty"`
+	Name  string  `json:"name,omitempty"`
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// APIParam
+
+type APIParam struct {
+	ParamType APIParamType    `json:"param_type,omitempty"`
+	Value     float64         `json:"value,omitempty"`
+	Control   ControlType     `json:"control,omitempty"` //Тип элемента интерфейса: поле для ввода, комбо-бокс, галочка,...
+	Enabled   bool            `json:"enabled,omitempty"`
+	Visible   bool            `json:"visible,omitempty"`
+	ValueList []APIParamValue `json:"value_list,omitempty"`
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// APIPartNomenclature
+
+type APIPartNomenclature struct {
+	ID    int    `json:"id,omitempty"`
+	Name  string `json:"name,omitempty"`
+	List  bool   `json:"list,omitempty"`  // Показывает, есть ли список для выбора номенклатуры, или это значение не может поменяться
+	Empty bool   `json:"empty,omitempty"` // Показывает, может ли не указывыть номенклатуру для этой части
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// APIPart
+
+type APIPart struct {
+	ID                int                 `json:"id,omitempty"`
+	Name              string              `json:"name,omitempty"`
+	CalculationTypeID int                 `json:"calculation_type_id,omitempty"`
+	Nomenclature      APIPartNomenclature `json:"nomenclature,omitempty"`
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// APIComponentType
+
+type APIComponentType struct {
+	ID   int    `json:"id,omitempty"`
+	Name string `json:"name,omitempty"`
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// APIComponentSection
+
+type APIComponentSection struct {
+	Params []int `json:"params,omitempty"` // ID параметров из массива params этого участка
+	Parts  []int `json:"parts,omitempty"`  // ID частей из массива parts этого участка
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// APIComponent
+
+type APIComponent struct {
+	ID            int                   `json:"id,omitempty"`
+	ComponentType APIComponentType      `json:"component_type,omitempty"`
+	Sections      []APIComponentSection `json:"sections,omitempty"`
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// APIRegion
+
+type APIRegion struct {
+	ID          int            `json:"id,omitempty"`
+	Description string         `json:"description,omitempty"`
+	RegionType  *APIRegionType `json:"region_type,omitempty"`
+	Params      []APIParam     `json:"params,omitempty"`
+	Parts       []APIPart      `json:"parts,omitempty"`
+	Components  []APIComponent `json:"components,omitempty"`
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -12,6 +111,7 @@ import (
 // Answer:
 //		{
 //			id             int
+//          descrption     string
 //			region_type   {
 //			     id        int
 //			     user_name string
@@ -77,30 +177,49 @@ import (
 ///////////////////////////////////////////////////////////////////////////////
 // Request: GET /projects/<id>/regions/<id>
 func GetRegionOfProject(request []string, params map[string][]string) (answer Answer) {
-	answer.Code = OK
+	var err error
+	var res APIRegion
+	defer answer.make(&err, &res)
+
 	answer.Message = "GetRegionOfProject"
 	projectID, err := strconv.ParseInt(request[1], 10, 0)
 	if err != nil {
 		answer.Code = BadRequest
-		answer.Message = fmt.Sprintf("Неверный ID проекта '%s'", request[1])
+		err = fmt.Errorf("Неверный ID проекта '%s'", request[1])
 		return
 	}
 
 	regionID, err := strconv.ParseInt(request[3], 10, 0)
 	if err != nil {
 		answer.Code = BadRequest
-		answer.Message = fmt.Sprintf("Неверный ID участка '%s'", request[3])
+		err = fmt.Errorf("Неверный ID участка '%s'", request[3])
 		return
 	}
 
 	rows, err := db.DB.Query(
 		`SELECT tregion_id, tregion.name
 		FROM region LEFT JOIN tregion ON region.tregion_id = tregion.id
-		WHERE project_id=? AND id=?`, int(projectID), int(regionID))
+		WHERE project_id=? AND region.id=?`, int(projectID), int(regionID))
+
+	if err != nil {
+		return
+	}
+
 	defer rows.Close()
 	for rows.Next() {
-		var rt APIRegionType
-		err = rows.Scan(&rt.ID, &rt.UserName)
+		err = rows.Scan(&res.RegionType.ID, &res.RegionType.UserName)
+		if err != nil {
+			return
+		}
+
+		// Get code name of region type
+		if res.RegionType.ID < 0 || res.RegionType.ID >= len(calc.Regions) {
+			err = fmt.Errorf("Неверный тип учатска '%d'", res.RegionType.ID)
+			return
+		}
+		res.RegionType.CodeName = calc.Regions[res.RegionType.ID].Name
+
+		//
 	}
 	err = rows.Err()
 
@@ -108,7 +227,7 @@ func GetRegionOfProject(request []string, params map[string][]string) (answer An
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// Request: POST /projects/<id>/regions/<id>[?param=<param_id>(<value>)&param=<param_id>(<value>)&...]
+// Request: POST /projects/<id>/regions/<id>[?description=<value>][?param=<param_id>(<value>)&param=<param_id>(<value>)&...]
 //
 func PostRegionOfProject(request []string, params map[string][]string) (answer Answer) {
 	answer.Message = "PostRegionOfProject"

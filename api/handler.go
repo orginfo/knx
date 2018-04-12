@@ -26,6 +26,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS")
 		w.Header().Set("Access-Control-Allow-Origin", "http://localhost:4200")
 		w.Header().Set("Access-Control-Max-Age", "5")
+		w.Header().Set("Content-Type", "application/json")
 
 		// TODO: Для реальной работы использовать компактный вывод: json.Marshal
 		//data, err := json.Marshal(answer)

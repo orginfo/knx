@@ -1,38 +1,5 @@
 package api
 
-// Коды ошибок API
-type APIErrorCode int
-
-const (
-	OK                  = 200
-	BadRequest          = 400
-	InternalServerError = 500
-)
-
-// Описание ошибок API
-var APIErrorDesc = [...]string{
-	OK:                  "OK",
-	BadRequest:          "Bad Request",           // некорректный запрос
-	InternalServerError: "Internal server error", // внутренняя ошибка сервера
-}
-
-// Ответ. Используется как возвращаемое значение для Get/Put/Post/Delete команд
-type Answer struct {
-	Code    APIErrorCode
-	Message string
-	ID      int // id измененного(возвращаемого) элемента
-	Result  interface{}
-}
-
-type HTTPCallbackFunc func([]string, map[string][]string) Answer
-
-type HTTPCallbackSet struct {
-	Get  HTTPCallbackFunc
-	Put  HTTPCallbackFunc
-	Post HTTPCallbackFunc
-	Del  HTTPCallbackFunc
-}
-
 /*
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Карта всех вызовов функций для команд (get, put, post, del)
@@ -106,23 +73,23 @@ PUT /clients/<id>/projects?contract_date=<value>[?install_date=<value>][?comment
 GET /projects
 GET /projects/<id>
 GET /projects/<id>/regions
-GET /projects/<id>/regions/<nr>
-GET /projects/<id>/regions/<nr>/results
-GET /projects/<id>/regions/<nr>/components
-GET /projects/<id>/regions/<nr>/components/<id>
-GET /projects/<id>/regions/<nr>/components/<id>/parts
-GET /projects/<id>/regions/<nr>/components/<id>/parts/<id>
+GET /projects/<id>/regions/<id>
+GET /projects/<id>/regions/<id>/results
+GET /projects/<id>/regions/<id>/components
+GET /projects/<id>/regions/<id>/components/<id>
+GET /projects/<id>/regions/<id>/components/<id>/parts
+GET /projects/<id>/regions/<id>/components/<id>/parts/<id>
 
-PUT /projects/<id>/regions?region_type=<Value>[?params=<param_id>(<value>),<param_id>(<value>),...]
-PUT /projects/<id>/regions/<nr>/results		//return error
-PUT /projects/<id>/regions/<nr>/components?component_type=<id>,<id>,...
+PUT /projects/<id>/regions?region_type=<Value>[?description=<value>][?params=<param_id>(<value>),<param_id>(<value>),...]
+PUT /projects/<id>/regions/<id>/results		//return error
+PUT /projects/<id>/regions/<id>/components?component_type=<id>,<id>,...
 
 POST /projects/<id>[?contract_date=<value>][?install_date=<value>][?comment=<value>]
-POST /projects/<id>/regions/<nr>[?params=<param_id>(<value>),<param_id>(<value>),...]
-POST /projects/<id>/regions/<nr>/results	//return error
-POST /projects/<id>/regions/<nr>/components?component_type=<id>,<id>,...
+POST /projects/<id>/regions/<id>[?description=<value>][?params=<param_id>(<value>),<param_id>(<value>),...]
+POST /projects/<id>/regions/<id>/results	//return error
+POST /projects/<id>/regions/<id>/components?component_type=<id>,<id>,...
 
-DELETE /projects/<id>/regions/<nr>
+DELETE /projects/<id>/regions/<id>
 
 --------------------------------------------------------------------------------------------------------
 
