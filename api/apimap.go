@@ -13,7 +13,6 @@ PUT /region_types/<id>?name=<Value>
 PUT /region_types/<id>/param_types[?<param_id>,<param_id>,...]
 PUT /region_types/<id>/component_types?<id>,<id>,...
 
-
 POST /region_types/<id>?name=<Value>
 POST /region_types/<id>/param_types[?<param_id>,<param_id>,...]
 POST /region_types/<id>/component_types?<id>,<id>,...
@@ -61,13 +60,20 @@ PUT /users?login=<Login>[?name=<Value>][?phone=<value>][?position=<value>][?comm
 
 POST /users/<login>[?name=<Value>][?phone=<value>][?position=<value>][?comment=<value>]
 
+DELETE /users/<login>
+
 --------------------------------------------------------------------------------------------------------
 
 GET /clients
 GET /clients/<id>
 GET /clients/<id>/projects
 
+PUT /clients?name=<value>[?comment=<value>]
 PUT /clients/<id>/projects?contract_date=<value>[?install_date=<value>][?comment=<value>]
+
+POST /clients/<id>[?name=value][?comment=<value>]
+
+DELETE /clients/<id>
 
 --------------------------------------------------------------------------------------------------------
 GET /projects
@@ -79,14 +85,13 @@ GET /projects/<id>/regions/<id>/components
 GET /projects/<id>/regions/<id>/components/<id>
 GET /projects/<id>/regions/<id>/components/<id>/parts
 GET /projects/<id>/regions/<id>/components/<id>/parts/<id>
+GET /projects/<id>/results
 
 PUT /projects/<id>/regions?region_type=<Value>[?description=<value>][?params=<param_id>(<value>),<param_id>(<value>),...]
-PUT /projects/<id>/regions/<id>/results		//return error
 PUT /projects/<id>/regions/<id>/components?component_type=<id>,<id>,...
 
 POST /projects/<id>[?contract_date=<value>][?install_date=<value>][?comment=<value>]
 POST /projects/<id>/regions/<id>[?description=<value>][?params=<param_id>(<value>),<param_id>(<value>),...]
-POST /projects/<id>/regions/<id>/results	//return error
 POST /projects/<id>/regions/<id>/components?component_type=<id>,<id>,...
 
 DELETE /projects/<id>/regions/<id>
@@ -166,32 +171,33 @@ var F map[string]HTTPCallbackSet = map[string]HTTPCallbackSet{
 	"users<id>": {GetUser, NotImplemented, PostUser, DeleteUser},
 
 	"clients":             {GetClients, PutClient, NotImplemented, NotImplemented},
-	"clients<id>":         {GetClient, NotImplemented, PostClient, NotImplemented},
-	"clients<id>projects": {GetProjectsOfClient, PutProjectOfClient, NotImplemented, NotImplemented},
+	"clients<id>":         {GetClient, NotImplemented, PostClient, DeleteClient},
+	"clients<id>projects": {GetProjectsOfClient, PutProject, NotImplemented, NotImplemented},
 
 	"projects":                                       {GetProjects, NotImplemented, NotImplemented, NotImplemented},
 	"projects<id>":                                   {GetProject, NotImplemented, PostProject, DeleteProject},
-	"projects<id>regions":                            {GetRegionsOfProject, PutRegionOfProject, NotImplemented, NotImplemented},
-	"projects<id>regions<id>":                        {GetRegionOfProject, NotImplemented, PostRegionOfProject, DeleteRegionOfProject},
+	"projects<id>regions":                            {GetRegionsOfProject, PutRegion, NotImplemented, NotImplemented},
+	"projects<id>regions<id>":                        {GetRegion, NotImplemented, PostRegion, DeleteRegion},
 	"projects<id>regions<id>results":                 {GetResultsOfRegion, NotImplemented, NotImplemented, NotImplemented},
-	"projects<id>regions<id>components":              {GetComponentsOfRegion, PutComponentOfRegion, NotImplemented, NotImplemented},
-	"projects<id>regions<id>components<id>":          {GetComponentOfRegion, NotImplemented, PostComponentOfRegion, DeleteComponentOfRegion},
+	"projects<id>regions<id>components":              {GetComponentsOfRegion, PutComponent, NotImplemented, NotImplemented},
+	"projects<id>regions<id>components<id>":          {GetComponent, NotImplemented, PostComponent, DeleteComponent},
 	"projects<id>regions<id>components<id>parts":     {NotImplemented, NotImplemented, NotImplemented, NotImplemented},
 	"projects<id>regions<id>components<id>parts<id>": {NotImplemented, NotImplemented, NotImplemented, NotImplemented},
+	"projects<id>results":                            {GetResultsOfProject, NotImplemented, NotImplemented, NotImplemented},
 
 	"component_types":                               {GetComponentTypes, PutComponentType, NotImplemented, NotImplemented},
 	"component_types<id>":                           {GetComponentType, NotImplemented, PostComponentType, DeleteComponentType},
-	"component_types<id>part_types":                 {GetPartTypesOfComponentType, PutPartTypeOfComponentType, NotImplemented, NotImplemented},
-	"component_types<id>part_types<id>":             {GetPartTypeOfComponentType, NotImplemented, NotImplemented, DeletePartTypeOfComponentType},
+	"component_types<id>part_types":                 {GetPartTypesOfComponentType, PutPartType, NotImplemented, NotImplemented},
+	"component_types<id>part_types<id>":             {GetPartType, NotImplemented, PostPartType, DeletePartType},
 	"component_types<id>part_types<id>nomenclature": {GetNomenclatureForPartType, PutNomenclatureForPartType, PostNomenclatureForPartType, DeleteNomenclatureForPartType},
 
 	"nomenclature_types":                 {GetNomenclatureTypes, PutNomenclatureType, NotImplemented, NotImplemented},
 	"nomenclature_types<id>":             {GetNomenclatureType, NotImplemented, PostNomenclatureType, DeleteNomenclatureType},
-	"nomenclature_types<id>nomenclature": {GetNomenclatureOfNomenclatureType, PutNomenclatureOfNomenclatureType, NotImplemented, DeleteNomenclatureOfNomenclatureType},
+	"nomenclature_types<id>nomenclature": {GetNomenclatureOfNomenclatureType, PutNomenclature, NotImplemented, NotImplemented},
 
-	"nomenclature":          {GetNomenclatures, PutNomenclature, NotImplemented, NotImplemented},
+	"nomenclature":          {GetNomenclatures, NotImplemented, NotImplemented, NotImplemented},
 	"nomenclature<id>":      {GetNomenclature, NotImplemented, PostNomenclature, DeleteNomenclature},
-	"nomenclature<id>price": {GetPriceOfNomenclature, PutPriceOfNomenclature, PostPriceOfNomenclature, DeletePriceOfNomenclature},
+	"nomenclature<id>price": {GetPrice, PutPrice, PostPrice, DeletePrice},
 
 	"color_schemes":     {GetColorSchemes, PutColorScheme, NotImplemented, NotImplemented},
 	"color_schemes<id>": {GetColorScheme, NotImplemented, PostColorSchemes, DeleteColorScheme},

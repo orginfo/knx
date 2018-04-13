@@ -10,7 +10,6 @@ import (
 
 ///////////////////////////////////////////////////////////////////////////////
 // APIRegionType
-
 type APIRegionType struct {
 	ID       int    `json:"id,omitempty"`
 	UserName string `json:"user_name,omitempty"`
@@ -92,5 +91,69 @@ func GetRegionType(request []string, params map[string][]string) (answer Answer)
 func PostRegionType(request []string, params map[string][]string) (answer Answer) {
 	answer.Code = OK
 	answer.Message = "PostRegionType"
+	return
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Request: GET /region_types/<id>/param_types
+//
+func GetParamTypesOfRegionType(request []string, params map[string][]string) (answer Answer) {
+	answer.Message = "GetParamTypesOfRegionType"
+	return
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Request: PUT /region_types/<id>/param_types[?<param_id>,<param_id>,...]
+//
+func PutParamTypesOfRegionType(request []string, params map[string][]string) (answer Answer) {
+	answer.Message = "PutParamTypesOfRegionType"
+	return
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Request: POST /region_types/<id>/param_types[?<param_id>,<param_id>,...]
+//
+func PostParamTypesOfRegionType(request []string, params map[string][]string) (answer Answer) {
+	answer.Message = "PostRegionTypesParamTypes"
+	return
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Request: DELETE /region_types/<id>/param_types[?<param_id>,<param_id>,...]
+//
+func DeleteParamTypesOfRegionType(request []string, params map[string][]string) (answer Answer) {
+	answer.Message = "DeleteParamTypesOfRegionType"
+	return
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Request: GET /region_types/<id>/component_types
+//
+func GetComponentTypesOfRegionType(request []string, params map[string][]string) (answer Answer) {
+	answer.Message = "GetComponentTypesOfRegionType"
+	return
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Request: PUT /region_types/<id>/component_types[?<id>,<id>,...]
+//
+func PutComponentTypesOfRegionType(request []string, params map[string][]string) (answer Answer) {
+	answer.Message = "PutComponentTypesOfRegionType"
+	return
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Request: POST /region_types/<id>/component_types[?<id>,<id>,...]
+//
+func PostComponentTypesOfRegionType(request []string, params map[string][]string) (answer Answer) {
+	answer.Message = "PostComponentTypesOfRegionType"
+	return
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Request: DELETE /region_types/<id>/component_types[?<id>,<id>,...]
+//
+func DeleteComponentTypesOfRegionType(request []string, params map[string][]string) (answer Answer) {
+	answer.Message = "DeleteComponentTypesOfRegionType"
 	return
 }

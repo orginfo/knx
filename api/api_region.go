@@ -20,25 +20,7 @@ const (
 )
 
 ///////////////////////////////////////////////////////////////////////////////
-// APIParamType
-
-type APIParamType struct {
-	ID          int    `json:"id,omitempty"`
-	Name        string `json:"name,omitempty"`
-	Description string `json:"description,omitempty"`
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// APIParamValue
-
-type APIParamValue struct {
-	Value float64 `json:"value,omitempty"`
-	Name  string  `json:"name,omitempty"`
-}
-
-///////////////////////////////////////////////////////////////////////////////
 // APIParam
-
 type APIParam struct {
 	ParamType APIParamType    `json:"param_type,omitempty"`
 	Value     float64         `json:"value,omitempty"`
@@ -50,7 +32,6 @@ type APIParam struct {
 
 ///////////////////////////////////////////////////////////////////////////////
 // APIPartNomenclature
-
 type APIPartNomenclature struct {
 	ID    int    `json:"id,omitempty"`
 	Name  string `json:"name,omitempty"`
@@ -60,7 +41,6 @@ type APIPartNomenclature struct {
 
 ///////////////////////////////////////////////////////////////////////////////
 // APIPart
-
 type APIPart struct {
 	ID                int                 `json:"id,omitempty"`
 	Name              string              `json:"name,omitempty"`
@@ -69,33 +49,7 @@ type APIPart struct {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// APIComponentType
-
-type APIComponentType struct {
-	ID   int    `json:"id,omitempty"`
-	Name string `json:"name,omitempty"`
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// APIComponentSection
-
-type APIComponentSection struct {
-	Params []int `json:"params,omitempty"` // ID параметров из массива params этого участка
-	Parts  []int `json:"parts,omitempty"`  // ID частей из массива parts этого участка
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// APIComponent
-
-type APIComponent struct {
-	ID            int                   `json:"id,omitempty"`
-	ComponentType APIComponentType      `json:"component_type,omitempty"`
-	Sections      []APIComponentSection `json:"sections,omitempty"`
-}
-
-///////////////////////////////////////////////////////////////////////////////
 // APIRegion
-
 type APIRegion struct {
 	ID          int            `json:"id,omitempty"`
 	Description string         `json:"description,omitempty"`
@@ -162,7 +116,7 @@ type APIRegion struct {
 //					/*Для GUI:*/
 //					/*Содержимое компонента разбито по секциям, каждая секция содержит параметры и части для выбора номенклатуры*/
 //					/*Параметры одной секции влияют на выбор номенклатуры этой секции и, возможно, на выбор других параметров секции*/
-//					/*Секция может не содержать параметров, если для номенклатура секции от параметров не зависит*/
+//					/*Секция может не содержать параметров, если номенклатура секции от параметров не зависит*/
 //					sections: [
 //						{
 //							params []int /*id параметров из массива params этого участка*/
@@ -175,13 +129,33 @@ type APIRegion struct {
 //
 
 ///////////////////////////////////////////////////////////////////////////////
-// Request: GET /projects/<id>/regions/<id>
-func GetRegionOfProject(request []string, params map[string][]string) (answer Answer) {
+// Request: GET /projects/<id>/regions
+//
+func GetRegionsOfProject(request []string, params map[string][]string) (answer Answer) {
 	var err error
 	var res APIRegion
 	defer answer.make(&err, &res)
 
-	answer.Message = "GetRegionOfProject"
+	answer.Message = "GetRegionsOfProject"
+	_, err = strconv.ParseInt(request[1], 10, 0)
+	if err != nil {
+		answer.Code = BadRequest
+		err = fmt.Errorf("Неверный ID проекта '%s'", request[1])
+		return
+	}
+
+	return
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Request: GET /projects/<id>/regions/<id>
+//
+func GetRegion(request []string, params map[string][]string) (answer Answer) {
+	var err error
+	var res APIRegion
+	defer answer.make(&err, &res)
+
+	answer.Message = "GetRegion"
 	projectID, err := strconv.ParseInt(request[1], 10, 0)
 	if err != nil {
 		answer.Code = BadRequest
@@ -197,7 +171,7 @@ func GetRegionOfProject(request []string, params map[string][]string) (answer An
 	}
 
 	rows, err := db.DB.Query(
-		`SELECT tregion_id, tregion.name
+		`SELECT tregion_id, tregion.name, region.description
 		FROM region LEFT JOIN tregion ON region.tregion_id = tregion.id
 		WHERE project_id=? AND region.id=?`, int(projectID), int(regionID))
 
@@ -207,7 +181,7 @@ func GetRegionOfProject(request []string, params map[string][]string) (answer An
 
 	defer rows.Close()
 	for rows.Next() {
-		err = rows.Scan(&res.RegionType.ID, &res.RegionType.UserName)
+		err = rows.Scan(&res.RegionType.ID, &res.RegionType.UserName, &res.Description)
 		if err != nil {
 			return
 		}
@@ -227,17 +201,25 @@ func GetRegionOfProject(request []string, params map[string][]string) (answer An
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// Request: PUT /projects/<id>/regions?region_type=<Value>[?description=<value>][?params=<param_id>(<value>),<param_id>(<value>),...]
+//
+func PutRegion(request []string, params map[string][]string) (answer Answer) {
+	answer.Message = "PutRegion"
+	return
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // Request: POST /projects/<id>/regions/<id>[?description=<value>][?param=<param_id>(<value>)&param=<param_id>(<value>)&...]
 //
-func PostRegionOfProject(request []string, params map[string][]string) (answer Answer) {
-	answer.Message = "PostRegionOfProject"
+func PostRegion(request []string, params map[string][]string) (answer Answer) {
+	answer.Message = "PostRegion"
 	return
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // Request: DELETE /projects/<id>/regions/<id>
 //
-func DeleteRegionOfProject(request []string, params map[string][]string) (answer Answer) {
-	answer.Message = "DeleteRegionOfProject"
+func DeleteRegion(request []string, params map[string][]string) (answer Answer) {
+	answer.Message = "DeleteRegion"
 	return
 }
