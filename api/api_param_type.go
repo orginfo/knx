@@ -12,7 +12,7 @@ type APIParamType struct {
 ///////////////////////////////////////////////////////////////////////////////
 // APIParamValue
 type APIParamValue struct {
-	Value float64 `json:"value,omitempty"`
+	Value float32 `json:"value,omitempty"`
 	Name  string  `json:"name,omitempty"`
 }
 

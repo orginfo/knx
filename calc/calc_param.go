@@ -43,9 +43,9 @@ const ColorParamName string = "<color>"
 const UndefinedParamValue = -1 // This value means the parameter is not set
 
 type ParamValue struct {
-	Value           float64                   // Parameter value
+	Value           float32                   // Parameter value
 	Name            string                    // The value description, if needed
-	DependentParams map[ParamTypeID][]float64 //
+	DependentParams map[ParamTypeID][]float32 //
 }
 
 type Param struct {
@@ -68,19 +68,19 @@ type Param struct {
 
 // Шаг столбов, разбиение
 const (
-	ColumnStepSpecified float64 = iota // Шаг столбов: заданный
+	ColumnStepSpecified float32 = iota // Шаг столбов: заданный
 	ColumnStepEquable                  // Шаг столбов: разбить на ровные участки
 )
 
 // Шаг столбов, остаток
 const (
-	ColumnStepSpaceEnd   float64 = iota // Шаг столбов: заданный, остаток в конце
+	ColumnStepSpaceEnd   float32 = iota // Шаг столбов: заданный, остаток в конце
 	ColumnStepSpaceStart                // Шаг столбов: заданный, остаток в начале
 )
 
 // Метод установки столбов
 const (
-	ColumnInstallMethodСoncreting float64 = iota // Бетонирование
+	ColumnInstallMethodСoncreting float32 = iota // Бетонирование
 	ColumnInstallMethodButting                   // Бутирование
 	ColumnInstallMethodHILST                     // HILST
 	ColumnInstallMethodFlanges                   // Фланцы
@@ -195,7 +195,7 @@ var Params = [...]Param{
 		Values: []ParamValue{
 			{Value: ColumnStepSpecified, Name: "Заданный"},
 			{Value: ColumnStepEquable, Name: "Разбить на ровные участки",
-				DependentParams: map[ParamTypeID][]float64{
+				DependentParams: map[ParamTypeID][]float32{
 					PTColumnStepSpace: {},
 				},
 			},
@@ -296,7 +296,7 @@ var Params = [...]Param{
 			{
 				Value: 0,
 				Name:  BoolParamName,
-				DependentParams: map[ParamTypeID][]float64{
+				DependentParams: map[ParamTypeID][]float32{
 					PTColorColumnPaint: {},
 				},
 			},
@@ -381,14 +381,14 @@ var Params = [...]Param{
 			{
 				Value: 0,
 				Name:  BoolParamName,
-				DependentParams: map[ParamTypeID][]float64{
+				DependentParams: map[ParamTypeID][]float32{
 					PTColorCanvasPaint: {},
 				},
 			},
 			{
 				Value: 1,
 				Name:  BoolParamName,
-				DependentParams: map[ParamTypeID][]float64{
+				DependentParams: map[ParamTypeID][]float32{
 					PTColorCanvas: {NoColor},
 				},
 			},
@@ -428,7 +428,7 @@ var Params = [...]Param{
 			{
 				Value: 0,
 				Name:  BoolParamName,
-				DependentParams: map[ParamTypeID][]float64{
+				DependentParams: map[ParamTypeID][]float32{
 					PTColorFix: {},
 				},
 			},
@@ -516,7 +516,7 @@ var Params = [...]Param{
 			{
 				Value: 0,
 				Name:  BoolParamName,
-				DependentParams: map[ParamTypeID][]float64{
+				DependentParams: map[ParamTypeID][]float32{
 					PTColorHStick: {},
 				},
 			},

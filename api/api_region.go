@@ -23,7 +23,7 @@ const (
 // APIParam
 type APIParam struct {
 	ParamType APIParamType    `json:"param_type,omitempty"`
-	Value     float64         `json:"value,omitempty"`
+	Value     float32         `json:"value,omitempty"`
 	Control   ControlType     `json:"control,omitempty"` //Тип элемента интерфейса: поле для ввода, комбо-бокс, галочка,...
 	Enabled   bool            `json:"enabled,omitempty"`
 	Visible   bool            `json:"visible,omitempty"`

@@ -115,7 +115,7 @@ var sqlDeclarations []string = []string{
     value           FLOAT )`,
 
 	`CREATE TABLE cn_tnomenclature_usefield (
-    tnomenclature_id INTEGER REFERENCES tnomenclature(id) NOT NULL,
+    tnomenclature_id INTEGER REFERENCES tnomenclature(id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
     field_name       TEXT )`,
 
 	`CREATE TABLE tcomponent (
@@ -384,6 +384,11 @@ func InitDB(dbPath string) (db *sql.DB, err error) {
 	}
 
 	err = rows.Err()
+	if err != nil {
+		return
+	}
+	_, err = db.Exec("PRAGMA foreign_keys = ON")
+
 	return
 }
 

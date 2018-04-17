@@ -10,7 +10,7 @@ const (
 
 type MaterialCalculation struct {
 	Name string
-	Func func(...interface{}) []float64
+	Func func(...interface{}) []float32
 }
 
 var MaterialCalculations = [...]MaterialCalculation{
@@ -28,8 +28,8 @@ var MaterialCalculations = [...]MaterialCalculation{
 // MCDoNotCalculateFunc - функция-заглушка для материалов, не требующих расчета
 // Входящие параметры: нет
 // Результаты: пустой срез
-func MCDoNotCalculateFunc(...interface{}) []float64 {
-	return []float64{}
+func MCDoNotCalculateFunc(...interface{}) []float32 {
+	return []float32{}
 }
 
 // MCPaintAreaFunc - расчет краски, требуемой на покраску поверхности определеной площади
@@ -42,7 +42,7 @@ func MCDoNotCalculateFunc(...interface{}) []float64 {
 // [0] Количество банок краски
 // [1] Объем требуемой краски, в мл
 // [2] Остаток, в мл
-func MCPaintAreaFunc(...interface{}) (res []float64) {
-	res = []float64{0} // TODO: implement real calculations
+func MCPaintAreaFunc(...interface{}) (res []float32) {
+	res = []float32{0} // TODO: implement real calculations
 	return
 }

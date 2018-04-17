@@ -9,11 +9,11 @@ type APINomenclature struct {
 	VendorCode                  string               `json:"vendor_code,omitempty"`
 	MeasureUnit                 string               `json:"measure_unit,omitempty"`
 	Material                    string               `json:"material,omitempty"`
-	Thickness                   float64              `json:"thickness,omitempty"`
+	Thickness                   float32              `json:"thickness,omitempty"`
 	Color                       *APIColor            `json:"color,omitempty"`
-	Size                        float64              `json:"size,omitempty"`
+	Size                        float32              `json:"size,omitempty"`
 	Price                       int                  `json:"price,omitempty"`
-	Division                    []float64            `json:"division,omitempty"`
+	Division                    []float32            `json:"division,omitempty"`
 	DivisionServiceNomenclature *APINomenclature     `json:"division_service_nomencla,omitempty"`
 }
 
