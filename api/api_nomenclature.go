@@ -142,7 +142,7 @@ func PutNomenclature(request []string, params map[string][]string) (answer Answe
 	rp["tnomenclature_id"] = RequestParam{Optional: false, Type: Int, Value: RequestParamValue{Type: Int, IntValue: int(NomenclatureTypeID)}}
 
 	// Insert into [tnomenclature]
-	sqlText, sqlParams := rp.MakeSQLInsert("nomenclature", []string{"tnomenclature_id", "vendor_code", "name", "measure_unit",
+	sqlText, sqlParams := rp.MakeSQLInsert("nomenclature", []string{"tnomenclature_id", "name", "vendor_code", "measure_unit",
 		"material", "thickness", "color_id", "size", "division", "division_service_nomenclature_id"})
 	var res sql.Result
 	res, err = db.DB.Exec(sqlText, sqlParams...)
@@ -165,7 +165,46 @@ func PutNomenclature(request []string, params map[string][]string) (answer Answe
 //	[?material=<value>][?thickness=<value>][?color_id=<value>][?size=<value>][division=<value>,<value>,...][division_service_nomenclature_id=<value>]
 //
 func PostNomenclature(request []string, params map[string][]string) (answer Answer) {
-	answer.Message = "PostNomenclature"
+	var err error
+	defer answer.make(&err, nil)
+
+	var id int64
+	id, err = strconv.ParseInt(request[1], 10, 0)
+	if err != nil {
+		answer.Code = BadRequest
+		err = fmt.Errorf("Неверный ID '%s'", request[1])
+		return
+	}
+
+	// Parse user request parameters
+	var rp RequestParams = RequestParams{
+		"name":                             {Optional: true, Type: String},
+		"vendor_code":                      {Optional: true, Type: String},
+		"measure_unit":                     {Optional: true, Type: String},
+		"material":                         {Optional: true, Type: String},
+		"thickness":                        {Optional: true, Type: Float},
+		"color_id":                         {Optional: true, Type: Int},
+		"size":                             {Optional: true, Type: Float},
+		"division":                         {Optional: true, Type: String},
+		"division_service_nomenclature_id": {Optional: true, Type: Int},
+	}
+
+	err = rp.Parse(params)
+	if err != nil {
+		answer.Code = BadRequest
+		return
+	}
+
+	// Update [tnomenclature]
+	sqlText, sqlParams := rp.MakeSQLUpdate("nomenclature", []string{"name", "vendor_code", "measure_unit",
+		"material", "thickness", "color_id", "size", "division", "division_service_nomenclature_id"}, int(id))
+	if len(sqlParams) > 0 {
+		_, err = db.DB.Exec(sqlText, sqlParams...)
+		if err != nil {
+			return
+		}
+	}
+
 	return
 }
 
@@ -173,6 +212,18 @@ func PostNomenclature(request []string, params map[string][]string) (answer Answ
 // Request: DELETE /nomenclature/<id>
 //
 func DeleteNomenclature(request []string, params map[string][]string) (answer Answer) {
-	answer.Message = "DeleteNomenclature"
+	var err error
+	defer answer.make(&err, nil)
+
+	var id int64
+	id, err = strconv.ParseInt(request[1], 10, 0)
+	if err != nil {
+		answer.Code = BadRequest
+		err = fmt.Errorf("Неверный ID '%s'", request[1])
+		return
+	}
+
+	// Delete from [nomenclature]
+	_, err = db.DB.Exec("DELETE FROM nomenclature WHERE id=?", int(id))
 	return
 }

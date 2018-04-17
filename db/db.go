@@ -97,7 +97,7 @@ var sqlDeclarations []string = []string{
     tnomenclature_id INTEGER REFERENCES tnomenclature(id) NOT NULL,
     vendor_code      TEXT,
     name             TEXT,
-    mesure_unit      TEXT,
+    measure_unit      TEXT,
     material         TEXT,
     thickness        FLOAT,
     color_id         INTEGER REFERENCES color(id),
@@ -183,7 +183,7 @@ const (
 )
 
 var MetaValues map[string]string = map[string]string{
-	MetaKeyVersion: "2018-04-17",
+	MetaKeyVersion: "2018-04-17.2",
 }
 
 // convertDB - convert DB from one version to another
