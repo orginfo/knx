@@ -1,5 +1,12 @@
 package api
 
+import (
+	"database/sql"
+	"fmt"
+	"knx/db"
+	"strconv"
+)
+
 ///////////////////////////////////////////////////////////////////////////////
 // APINomenclature
 type APINomenclature struct {
@@ -101,7 +108,55 @@ func GetNomenclatureForValueOfParamType(request []string, params map[string][]st
 //	[?material=<value>][?thickness=<value>][?color_id=<value>][?size=<value>][division=<value>,<value>,...][division_service_nomenclature_id=<value>]
 //
 func PutNomenclature(request []string, params map[string][]string) (answer Answer) {
-	answer.Message = "PutNomenclature"
+	var err error
+	defer answer.make(&err, nil)
+
+	var NomenclatureTypeID int64
+	NomenclatureTypeID, err = strconv.ParseInt(request[1], 10, 0)
+	if err != nil {
+		answer.Code = BadRequest
+		err = fmt.Errorf("Неверный ID '%s'", request[1])
+		return
+	}
+
+	// Parse user request parameters
+	var rp RequestParams = RequestParams{
+		"name":                             {Optional: false, Type: String},
+		"vendor_code":                      {Optional: true, Type: String},
+		"measure_unit":                     {Optional: true, Type: String},
+		"material":                         {Optional: true, Type: String},
+		"thickness":                        {Optional: true, Type: Float},
+		"color_id":                         {Optional: true, Type: Int},
+		"size":                             {Optional: true, Type: Float},
+		"division":                         {Optional: true, Type: String},
+		"division_service_nomenclature_id": {Optional: true, Type: Int},
+	}
+
+	err = rp.Parse(params)
+	if err != nil {
+		answer.Code = BadRequest
+		return
+	}
+
+	// Add SQL-parameter [tnomenclature_id]
+	rp["tnomenclature_id"] = RequestParam{Optional: false, Type: Int, Value: RequestParamValue{Type: Int, IntValue: int(NomenclatureTypeID)}}
+
+	// Insert into [tnomenclature]
+	sqlText, sqlParams := rp.MakeSQLInsert("nomenclature", []string{"tnomenclature_id", "vendor_code", "name", "measure_unit",
+		"material", "thickness", "color_id", "size", "division", "division_service_nomenclature_id"})
+	var res sql.Result
+	res, err = db.DB.Exec(sqlText, sqlParams...)
+	if err != nil {
+		return
+	}
+
+	var id int64
+	id, err = res.LastInsertId()
+	if err != nil {
+		return
+	}
+	answer.ID = int(id)
+
 	return
 }
 
