@@ -183,7 +183,7 @@ const (
 )
 
 var MetaValues map[string]string = map[string]string{
-	MetaKeyVersion: "2018-04-13",
+	MetaKeyVersion: "2018-04-17",
 }
 
 // convertDB - convert DB from one version to another
