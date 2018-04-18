@@ -23,7 +23,7 @@ const (
 // APIParam
 type APIParam struct {
 	ParamType APIParamType    `json:"param_type,omitempty"`
-	Value     float32         `json:"value,omitempty"`
+	Value     float64         `json:"value,omitempty"`
 	Control   ControlType     `json:"control,omitempty"` //Тип элемента интерфейса: поле для ввода, комбо-бокс, галочка,...
 	Enabled   bool            `json:"enabled,omitempty"`
 	Visible   bool            `json:"visible,omitempty"`
@@ -33,7 +33,7 @@ type APIParam struct {
 ///////////////////////////////////////////////////////////////////////////////
 // APIPartNomenclature
 type APIPartNomenclature struct {
-	ID    int    `json:"id,omitempty"`
+	ID    int64  `json:"id,omitempty"`
 	Name  string `json:"name,omitempty"`
 	List  bool   `json:"list,omitempty"`  // Показывает, есть ли список для выбора номенклатуры, или это значение не может поменяться
 	Empty bool   `json:"empty,omitempty"` // Показывает, может ли не указывыть номенклатуру для этой части
@@ -42,16 +42,16 @@ type APIPartNomenclature struct {
 ///////////////////////////////////////////////////////////////////////////////
 // APIPart
 type APIPart struct {
-	ID                int                 `json:"id,omitempty"`
+	ID                int64               `json:"id,omitempty"`
 	Name              string              `json:"name,omitempty"`
-	CalculationTypeID int                 `json:"calculation_type_id,omitempty"`
+	CalculationTypeID int64               `json:"calculation_type_id,omitempty"`
 	Nomenclature      APIPartNomenclature `json:"nomenclature,omitempty"`
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // APIRegion
 type APIRegion struct {
-	ID          int            `json:"id,omitempty"`
+	ID          int64          `json:"id,omitempty"`
 	Description string         `json:"description,omitempty"`
 	RegionType  *APIRegionType `json:"region_type,omitempty"`
 	Params      []APIParam     `json:"params,omitempty"`
@@ -137,7 +137,7 @@ func GetRegionsOfProject(request []string, params map[string][]string) (answer A
 	defer answer.make(&err, &res)
 
 	answer.Message = "GetRegionsOfProject"
-	_, err = strconv.ParseInt(request[1], 10, 0)
+	_, err = strconv.ParseInt(request[1], 10, 64)
 	if err != nil {
 		answer.Code = BadRequest
 		err = fmt.Errorf("Неверный ID проекта '%s'", request[1])
@@ -156,14 +156,15 @@ func GetRegion(request []string, params map[string][]string) (answer Answer) {
 	defer answer.make(&err, &res)
 
 	answer.Message = "GetRegion"
-	projectID, err := strconv.ParseInt(request[1], 10, 0)
+	var projectID int64
+	projectID, err = strconv.ParseInt(request[1], 10, 64)
 	if err != nil {
 		answer.Code = BadRequest
 		err = fmt.Errorf("Неверный ID проекта '%s'", request[1])
 		return
 	}
 
-	regionID, err := strconv.ParseInt(request[3], 10, 0)
+	answer.ID, err = strconv.ParseInt(request[3], 10, 64)
 	if err != nil {
 		answer.Code = BadRequest
 		err = fmt.Errorf("Неверный ID участка '%s'", request[3])
@@ -173,7 +174,7 @@ func GetRegion(request []string, params map[string][]string) (answer Answer) {
 	rows, err := db.DB.Query(
 		`SELECT tregion_id, tregion.name, region.description
 		FROM region LEFT JOIN tregion ON region.tregion_id = tregion.id
-		WHERE project_id=? AND region.id=?`, int(projectID), int(regionID))
+		WHERE project_id=? AND region.id=?`, projectID, answer.ID)
 
 	if err != nil {
 		return
@@ -187,7 +188,7 @@ func GetRegion(request []string, params map[string][]string) (answer Answer) {
 		}
 
 		// Get code name of region type
-		if res.RegionType.ID < 0 || res.RegionType.ID >= len(calc.Regions) {
+		if res.RegionType.ID < 0 || res.RegionType.ID >= int64(len(calc.Regions)) {
 			err = fmt.Errorf("Неверный тип учатска '%d'", res.RegionType.ID)
 			return
 		}

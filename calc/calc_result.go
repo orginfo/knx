@@ -1,7 +1,7 @@
 package calc
 
 // Results of the calculation
-type ResultTypeID int
+type ResultTypeID int64
 
 const (
 	RSNomenclature ResultTypeID = iota

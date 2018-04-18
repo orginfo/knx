@@ -3,7 +3,7 @@ package api
 ///////////////////////////////////////////////////////////////////////////////
 // APIUser
 type APIUser struct {
-	ID       int    `json:"id,omitempty"`
+	ID       int64  `json:"id,omitempty"`
 	Login    string `json:"login,omitempty"`
 	Name     string `json:"name,omitempty"`
 	Phone    string `json:"phone,omitempty"`

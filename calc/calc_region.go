@@ -4,10 +4,10 @@ package calc
 // TODO: добавить недостающие типы участков: Кирпичный забор, Сварной забор, Калитки, Ворота и т.д.
 type Region struct {
 	Name       string
-	Components []int // Типы компонентов по умолчанию, для начального заполнения бд, могут быть изменены
+	Components []int64 // Типы компонентов по умолчанию, для начального заполнения бд, могут быть изменены
 }
 
-type RegionTypeID int
+type RegionTypeID int64
 
 const (
 	RTProject RegionTypeID = iota
@@ -30,48 +30,48 @@ var Regions = [...]Region{
 	},
 	RTProflistFenceVer: {
 		Name:       "Классический забор из профнастила вертикальный",
-		Components: []int{CMColumns, CMHStick},
+		Components: []int64{CMColumns, CMHStick},
 	},
 
 	RTProflistFenceHor: {
 		Name:       "Классический забор из профнастила горизонтальный",
-		Components: []int{CMColumns},
+		Components: []int64{CMColumns},
 	},
 
 	RTBattenFenceVer: {
 		Name:       "Классический забор из штакетника вертикальный",
-		Components: []int{CMColumns, CMHStick},
+		Components: []int64{CMColumns, CMHStick},
 	},
 	RTBattenFenceHor: {
 		Name:       "Классический забор из штакетника горизонтальный",
-		Components: []int{CMColumns},
+		Components: []int64{CMColumns},
 	},
 	RTKnxProflistFence: {
 		Name:       "Забор KNX из профнастила",
-		Components: []int{CMColumns, CMHStick},
+		Components: []int64{CMColumns, CMHStick},
 	},
 	RTKnxBattenFence: {
 		Name:       "Забор KNX из штакетника",
-		Components: []int{CMColumns, CMHStick},
+		Components: []int64{CMColumns, CMHStick},
 	},
 	RTKnxEcoProflistFence: {
 		Name:       "Забор KNX ЭКО из профнастила",
-		Components: []int{CMColumns, CMHStick},
+		Components: []int64{CMColumns, CMHStick},
 	},
 	RTKnxEcoBattenFence: {
 		Name:       "Забор KNX ЭКО из штакетника",
-		Components: []int{CMColumns, CMHStick},
+		Components: []int64{CMColumns, CMHStick},
 	},
 	RT2D: {
 		Name:       "2D забор",
-		Components: []int{CMColumns, CMHStick},
+		Components: []int64{CMColumns, CMHStick},
 	},
 	RT3D: {
 		Name:       "3D забор",
-		Components: []int{CMColumns, CMHStick},
+		Components: []int64{CMColumns, CMHStick},
 	},
 	RTGrandLine: {
 		Name:       "Модульный забор Grand Line",
-		Components: []int{CMColumns, CMHStick},
+		Components: []int64{CMColumns, CMHStick},
 	},
 }

@@ -3,7 +3,7 @@ package api
 ///////////////////////////////////////////////////////////////////////////////
 // APIParamType
 type APIParamType struct {
-	ID          int    `json:"id,omitempty"`
+	ID          int64  `json:"id,omitempty"`
 	UserName    string `json:"user_name,omitempty"`
 	CodeName    string `json:"code_name,omitempty"`
 	Description string `json:"description,omitempty"`
@@ -12,7 +12,7 @@ type APIParamType struct {
 ///////////////////////////////////////////////////////////////////////////////
 // APIParamValue
 type APIParamValue struct {
-	Value float32 `json:"value,omitempty"`
+	Value float64 `json:"value,omitempty"`
 	Name  string  `json:"name,omitempty"`
 }
 

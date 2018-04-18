@@ -4,7 +4,7 @@ package api
 // APICalculationType
 
 type APICalculationType struct {
-	ID       int    `json:"id,omitempty"`
+	ID       int64  `json:"id,omitempty"`
 	UserName string `json:"user_name,omitempty"`
 	CodeName string `json:"code_name,omitempty"`
 }

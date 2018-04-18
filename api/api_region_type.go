@@ -11,7 +11,7 @@ import (
 ///////////////////////////////////////////////////////////////////////////////
 // APIRegionType
 type APIRegionType struct {
-	ID       int    `json:"id,omitempty"`
+	ID       int64  `json:"id,omitempty"`
 	UserName string `json:"user_name,omitempty"`
 	CodeName string `json:"code_name,omitempty"`
 }
@@ -24,7 +24,7 @@ func GetRegionTypes(request []string, params map[string][]string) (answer Answer
 	var res []APIRegionType
 	defer answer.make(&err, &res)
 
-	userNames := make(map[int]string)
+	userNames := make(map[int64]string)
 	var rows *sql.Rows
 	rows, err = db.DB.Query("SELECT id, name FROM tregion")
 	if err != nil {
@@ -32,7 +32,7 @@ func GetRegionTypes(request []string, params map[string][]string) (answer Answer
 	}
 	defer rows.Close()
 	for rows.Next() {
-		var id int
+		var id int64
 		var name string
 		err = rows.Scan(&id, &name)
 		if err != nil {
@@ -45,7 +45,7 @@ func GetRegionTypes(request []string, params map[string][]string) (answer Answer
 		return
 	}
 	for id, r := range calc.Regions {
-		res = append(res, APIRegionType{ID: id, UserName: userNames[id], CodeName: r.Name})
+		res = append(res, APIRegionType{ID: int64(id), UserName: userNames[int64(id)], CodeName: r.Name})
 	}
 	return
 }
@@ -57,20 +57,19 @@ func GetRegionType(request []string, params map[string][]string) (answer Answer)
 	var err error
 	var res APIRegionType
 	defer answer.make(&err, &res)
-	var id int64
-	id, err = strconv.ParseInt(request[1], 10, 0)
-	if err != nil || id < 0 || int(id) >= len(calc.Regions) {
+	answer.ID, err = strconv.ParseInt(request[1], 10, 64)
+	if err != nil || answer.ID < 0 || answer.ID >= int64(len(calc.Regions)) {
 		answer.Code = BadRequest
 		err = fmt.Errorf("Неверный ID '%s'", request[1])
 		return
 	}
 
 	// Get code name from constant declaration
-	res = APIRegionType{ID: int(id), CodeName: calc.Regions[id].Name}
+	res = APIRegionType{ID: answer.ID, CodeName: calc.Regions[answer.ID].Name}
 
 	// Get user name from db
 	var rows *sql.Rows
-	rows, err = db.DB.Query("SELECT name FROM tregion WHERE id=?", int(id))
+	rows, err = db.DB.Query("SELECT name FROM tregion WHERE id=?", answer.ID)
 	if err != nil {
 		return
 	}

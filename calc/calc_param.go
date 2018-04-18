@@ -1,7 +1,7 @@
 package calc
 
 // Типы входящих параметров для расчета
-type ParamTypeID int
+type ParamTypeID int64
 
 const (
 	PTTotalLength ParamTypeID = iota
@@ -43,9 +43,9 @@ const ColorParamName string = "<color>"
 const UndefinedParamValue = -1 // This value means the parameter is not set
 
 type ParamValue struct {
-	Value           float32                   // Parameter value
+	Value           float64                   // Parameter value
 	Name            string                    // The value description, if needed
-	DependentParams map[ParamTypeID][]float32 //
+	DependentParams map[ParamTypeID][]float64 //
 }
 
 type Param struct {
@@ -68,19 +68,19 @@ type Param struct {
 
 // Шаг столбов, разбиение
 const (
-	ColumnStepSpecified float32 = iota // Шаг столбов: заданный
+	ColumnStepSpecified float64 = iota // Шаг столбов: заданный
 	ColumnStepEquable                  // Шаг столбов: разбить на ровные участки
 )
 
 // Шаг столбов, остаток
 const (
-	ColumnStepSpaceEnd   float32 = iota // Шаг столбов: заданный, остаток в конце
+	ColumnStepSpaceEnd   float64 = iota // Шаг столбов: заданный, остаток в конце
 	ColumnStepSpaceStart                // Шаг столбов: заданный, остаток в начале
 )
 
 // Метод установки столбов
 const (
-	ColumnInstallMethodСoncreting float32 = iota // Бетонирование
+	ColumnInstallMethodСoncreting float64 = iota // Бетонирование
 	ColumnInstallMethodButting                   // Бутирование
 	ColumnInstallMethodHILST                     // HILST
 	ColumnInstallMethodFlanges                   // Фланцы
@@ -195,7 +195,7 @@ var Params = [...]Param{
 		Values: []ParamValue{
 			{Value: ColumnStepSpecified, Name: "Заданный"},
 			{Value: ColumnStepEquable, Name: "Разбить на ровные участки",
-				DependentParams: map[ParamTypeID][]float32{
+				DependentParams: map[ParamTypeID][]float64{
 					PTColumnStepSpace: {},
 				},
 			},
@@ -296,7 +296,7 @@ var Params = [...]Param{
 			{
 				Value: 0,
 				Name:  BoolParamName,
-				DependentParams: map[ParamTypeID][]float32{
+				DependentParams: map[ParamTypeID][]float64{
 					PTColorColumnPaint: {},
 				},
 			},
@@ -381,14 +381,14 @@ var Params = [...]Param{
 			{
 				Value: 0,
 				Name:  BoolParamName,
-				DependentParams: map[ParamTypeID][]float32{
+				DependentParams: map[ParamTypeID][]float64{
 					PTColorCanvasPaint: {},
 				},
 			},
 			{
 				Value: 1,
 				Name:  BoolParamName,
-				DependentParams: map[ParamTypeID][]float32{
+				DependentParams: map[ParamTypeID][]float64{
 					PTColorCanvas: {NoColor},
 				},
 			},
@@ -428,7 +428,7 @@ var Params = [...]Param{
 			{
 				Value: 0,
 				Name:  BoolParamName,
-				DependentParams: map[ParamTypeID][]float32{
+				DependentParams: map[ParamTypeID][]float64{
 					PTColorFix: {},
 				},
 			},
@@ -516,7 +516,7 @@ var Params = [...]Param{
 			{
 				Value: 0,
 				Name:  BoolParamName,
-				DependentParams: map[ParamTypeID][]float32{
+				DependentParams: map[ParamTypeID][]float64{
 					PTColorHStick: {},
 				},
 			},

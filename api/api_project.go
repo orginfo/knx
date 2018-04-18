@@ -3,9 +3,11 @@ package api
 ///////////////////////////////////////////////////////////////////////////////
 // APIProject
 type APIProject struct {
-	ID           int        `json:"id,omitempty"`
+	ID           int64      `json:"id,omitempty"`
+	Nr           string     `json:"nr,omitempty"`
 	ContractDate string     `json:"contract_date,omitempty"`
 	InstallDate  string     `json:"install_date,omitempty"`
+	Address      string     `json:"address,omitempty"`
 	Comment      string     `json:"comment,omitempty"`
 	User         *APIUser   `json:"user,omitempty"`
 	Client       *APIClient `json:"client,omitempty"`
@@ -20,8 +22,10 @@ type APIProject struct {
 //	[
 //		{
 //			id             int
+//          nr             string
 //			contract_date  string
 //			install_date   string
+//          address        string
 //			comment        string
 //			user: {
 //			    id         int
@@ -33,6 +37,7 @@ type APIProject struct {
 //			client: {
 //				id         int
 //				name       string
+//              phone      string
 //				comment    string
 //			}
 //		}
@@ -63,7 +68,7 @@ func GetProject(request []string, params map[string][]string) (answer Answer) {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// Request: PUT /clients/<id>/projects?contract_date=<value>[?install_date=<value>][?comment=<value>]
+// Request: PUT /clients/<id>/projects?contract_date=<value>[?install_date=<value>][?comment=<value>][?address=<value>]
 //
 func PutProject(request []string, params map[string][]string) (answer Answer) {
 	answer.Message = "PutProject"
@@ -71,7 +76,7 @@ func PutProject(request []string, params map[string][]string) (answer Answer) {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// Request: POST /project/<project_id>[?contract_date=<value>][?install_date=<value>][?comment=<value>]
+// Request: POST /project/<project_id>[?contract_date=<value>][?install_date=<value>][?comment=<value>][address=<value>]
 //
 func PostProject(request []string, params map[string][]string) (answer Answer) {
 	answer.Message = "PostProject"

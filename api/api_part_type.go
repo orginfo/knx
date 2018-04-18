@@ -3,9 +3,9 @@ package api
 ///////////////////////////////////////////////////////////////////////////////
 // APIPartType
 type APIPartType struct {
-	ID                int               `json:"id,omitempty"`
+	ID                int64             `json:"id,omitempty"`
 	Name              string            `json:"name,omitempty"`
-	CalculationTypeID int               `json:"calculation_type_id,omitempty"`
+	CalculationTypeID int64             `json:"calculation_type_id,omitempty"`
 	ComponentType     *APIComponentType `json:"component_type,omitempty"`
 }
 

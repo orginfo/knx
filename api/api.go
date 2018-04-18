@@ -23,7 +23,7 @@ var APIErrorDesc = [...]string{
 type Answer struct {
 	Code    APIErrorCode
 	Message string
-	ID      int // id измененного(возвращаемого) элемента
+	ID      int64 // id измененного(возвращаемого) элемента
 	Result  interface{}
 }
 

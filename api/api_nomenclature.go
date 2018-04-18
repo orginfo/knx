@@ -11,16 +11,16 @@ import (
 // APINomenclature
 type APINomenclature struct {
 	NomenclatureType            *APINomenclatureType `json:"nomenclature_type,omitempty"`
-	ID                          int                  `json:"id,omitempty"`
+	ID                          int64                `json:"id,omitempty"`
 	Name                        string               `json:"name,omitempty"`
 	VendorCode                  string               `json:"vendor_code,omitempty"`
 	MeasureUnit                 string               `json:"measure_unit,omitempty"`
 	Material                    string               `json:"material,omitempty"`
-	Thickness                   float32              `json:"thickness,omitempty"`
+	Thickness                   float64              `json:"thickness,omitempty"`
 	Color                       *APIColor            `json:"color,omitempty"`
-	Size                        float32              `json:"size,omitempty"`
+	Size                        float64              `json:"size,omitempty"`
 	Price                       int                  `json:"price,omitempty"`
-	Division                    []float32            `json:"division,omitempty"`
+	Division                    []float64            `json:"division,omitempty"`
 	DivisionServiceNomenclature *APINomenclature     `json:"division_service_nomencla,omitempty"`
 }
 
@@ -112,7 +112,7 @@ func PutNomenclature(request []string, params map[string][]string) (answer Answe
 	defer answer.make(&err, nil)
 
 	var NomenclatureTypeID int64
-	NomenclatureTypeID, err = strconv.ParseInt(request[1], 10, 0)
+	NomenclatureTypeID, err = strconv.ParseInt(request[1], 10, 64)
 	if err != nil {
 		answer.Code = BadRequest
 		err = fmt.Errorf("Неверный ID '%s'", request[1])
@@ -139,7 +139,7 @@ func PutNomenclature(request []string, params map[string][]string) (answer Answe
 	}
 
 	// Add SQL-parameter [tnomenclature_id]
-	rp["tnomenclature_id"] = RequestParam{Optional: false, Type: Int, Value: RequestParamValue{Type: Int, IntValue: int(NomenclatureTypeID)}}
+	rp["tnomenclature_id"] = RequestParam{Optional: false, Type: Int, Value: RequestParamValue{Type: Int, IntValue: NomenclatureTypeID}}
 
 	// Insert into [tnomenclature]
 	sqlText, sqlParams := rp.MakeSQLInsert("nomenclature", []string{"tnomenclature_id", "name", "vendor_code", "measure_unit",
@@ -150,12 +150,10 @@ func PutNomenclature(request []string, params map[string][]string) (answer Answe
 		return
 	}
 
-	var id int64
-	id, err = res.LastInsertId()
+	answer.ID, err = res.LastInsertId()
 	if err != nil {
 		return
 	}
-	answer.ID = int(id)
 
 	return
 }
@@ -168,8 +166,7 @@ func PostNomenclature(request []string, params map[string][]string) (answer Answ
 	var err error
 	defer answer.make(&err, nil)
 
-	var id int64
-	id, err = strconv.ParseInt(request[1], 10, 0)
+	answer.ID, err = strconv.ParseInt(request[1], 10, 64)
 	if err != nil {
 		answer.Code = BadRequest
 		err = fmt.Errorf("Неверный ID '%s'", request[1])
@@ -197,7 +194,7 @@ func PostNomenclature(request []string, params map[string][]string) (answer Answ
 
 	// Update [tnomenclature]
 	sqlText, sqlParams := rp.MakeSQLUpdate("nomenclature", []string{"name", "vendor_code", "measure_unit",
-		"material", "thickness", "color_id", "size", "division", "division_service_nomenclature_id"}, int(id))
+		"material", "thickness", "color_id", "size", "division", "division_service_nomenclature_id"}, answer.ID)
 	if len(sqlParams) > 0 {
 		_, err = db.DB.Exec(sqlText, sqlParams...)
 		if err != nil {
@@ -215,8 +212,7 @@ func DeleteNomenclature(request []string, params map[string][]string) (answer An
 	var err error
 	defer answer.make(&err, nil)
 
-	var id int64
-	id, err = strconv.ParseInt(request[1], 10, 0)
+	answer.ID, err = strconv.ParseInt(request[1], 10, 64)
 	if err != nil {
 		answer.Code = BadRequest
 		err = fmt.Errorf("Неверный ID '%s'", request[1])
@@ -224,6 +220,6 @@ func DeleteNomenclature(request []string, params map[string][]string) (answer An
 	}
 
 	// Delete from [nomenclature]
-	_, err = db.DB.Exec("DELETE FROM nomenclature WHERE id=?", int(id))
+	_, err = db.DB.Exec("DELETE FROM nomenclature WHERE id=?", answer.ID)
 	return
 }

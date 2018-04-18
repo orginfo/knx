@@ -3,8 +3,9 @@ package api
 ///////////////////////////////////////////////////////////////////////////////
 // APIClient
 type APIClient struct {
-	ID      int    `json:"id,omitempty"`
+	ID      int64  `json:"id,omitempty"`
 	Name    string `json:"name,omitempty"`
+	Phone   string `json:"phone,omitempty"`
 	Comment string `json:"comment,omitempty"`
 }
 
@@ -25,7 +26,7 @@ func GetClient(request []string, params map[string][]string) (answer Answer) {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// Request: PUT /clients?name=<value>[?comment=<value>]
+// Request: PUT /clients?name=<value>[?comment=<value>][?phone=<value>]
 //
 func PutClient(request []string, params map[string][]string) (answer Answer) {
 	answer.Message = "PutClient"
@@ -33,7 +34,7 @@ func PutClient(request []string, params map[string][]string) (answer Answer) {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// Request: POST /clients/<id>[?name=<value>][?comment=<value>]
+// Request: POST /clients/<id>[?name=<value>][?comment=<value>][?phone=<value>]
 //
 func PostClient(request []string, params map[string][]string) (answer Answer) {
 	answer.Message = "PostClient"

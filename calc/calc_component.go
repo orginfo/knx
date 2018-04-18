@@ -6,7 +6,7 @@ type Component struct {
 }
 
 const (
-	CMColumns int = iota
+	CMColumns int64 = iota
 	CMHStick
 )
 

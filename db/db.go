@@ -29,16 +29,19 @@ var sqlDeclarations []string = []string{
 	`CREATE TABLE client (
     id       INTEGER PRIMARY KEY,
     name     TEXT,
+    phone    TEXT,
     comment  TEXT )`,
 
 	`CREATE INDEX idx_client_name ON client(name)`,
 
 	`CREATE TABLE project (
     id            INTEGER PRIMARY KEY,
+    nr            TEXT UNIQUE,
     client_id     INTEGER REFERENCES client(id) NOT NULL,
     user_id       INTEGER REFERENCES user(id)   NOT NULL,
     contract_date DATETIME,
     install_date  DATETIME,
+    address       TEXT,
     comment       TEXT )`,
 
 	`CREATE TABLE tregion (
@@ -183,7 +186,7 @@ const (
 )
 
 var MetaValues map[string]string = map[string]string{
-	MetaKeyVersion: "2018-04-17.2",
+	MetaKeyVersion: "2018-04-18",
 }
 
 // convertDB - convert DB from one version to another
@@ -350,7 +353,8 @@ func InitDB(dbPath string) (db *sql.DB, err error) {
 	}
 
 	// Open the DB
-	db, err = sql.Open("sqlite3", dbPath)
+	var dbPathPlusParams string = dbPath + "?_foreign_keys=1"
+	db, err = sql.Open("sqlite3", dbPathPlusParams)
 	if err != nil {
 		return
 	}
@@ -387,7 +391,6 @@ func InitDB(dbPath string) (db *sql.DB, err error) {
 	if err != nil {
 		return
 	}
-	_, err = db.Exec("PRAGMA foreign_keys = ON")
 
 	return
 }

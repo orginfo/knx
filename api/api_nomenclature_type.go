@@ -10,9 +10,9 @@ import (
 ///////////////////////////////////////////////////////////////////////////////
 // APINomenclatureType
 type APINomenclatureType struct {
-	ID            int      `json:"id,omitempty"`
+	ID            int64    `json:"id,omitempty"`
 	Name          string   `json:"name,omitempty"`
-	ColorSchemeID *int     `json:"color_scheme_id,omitempty"` // Can be nil if no color scheme for this type
+	ColorSchemeID *int64   `json:"color_scheme_id,omitempty"` // Can be nil if no color scheme for this type
 	UseFields     []string `json:"use_fields,omitempty"`
 }
 
@@ -25,7 +25,7 @@ func GetNomenclatureTypes(request []string, params map[string][]string) (answer 
 	defer answer.make(&err, &res)
 
 	// Map of use_fileds
-	useFields := make(map[int][]string)
+	useFields := make(map[int64][]string)
 
 	// Select use_fields
 	var rows *sql.Rows
@@ -35,7 +35,7 @@ func GetNomenclatureTypes(request []string, params map[string][]string) (answer 
 	}
 	defer rows.Close()
 	for rows.Next() {
-		var id int
+		var id int64
 		var field string
 		err = rows.Scan(&id, &field)
 		if err != nil {
@@ -78,8 +78,7 @@ func GetNomenclatureType(request []string, params map[string][]string) (answer A
 	var res APINomenclatureType
 	defer answer.make(&err, &res)
 
-	var id int64
-	id, err = strconv.ParseInt(request[1], 10, 0)
+	answer.ID, err = strconv.ParseInt(request[1], 10, 64)
 	if err != nil {
 		answer.Code = BadRequest
 		err = fmt.Errorf("Неверный ID '%s'", request[1])
@@ -88,7 +87,7 @@ func GetNomenclatureType(request []string, params map[string][]string) (answer A
 
 	// Select data from main table [tnomenclature]
 	var row *sql.Row
-	row = db.DB.QueryRow("SELECT name, color_scheme_id FROM tnomenclature WHERE id=?", int(id))
+	row = db.DB.QueryRow("SELECT name, color_scheme_id FROM tnomenclature WHERE id=?", answer.ID)
 	err = row.Scan(&res.Name, &res.ColorSchemeID)
 	// If no rows, just return empty result
 	if err == sql.ErrNoRows {
@@ -98,11 +97,11 @@ func GetNomenclatureType(request []string, params map[string][]string) (answer A
 	if err != nil {
 		return
 	}
-	res.ID = int(id)
+	res.ID = answer.ID
 
 	// Select use_fields
 	var rows *sql.Rows
-	rows, err = db.DB.Query("SELECT field_name FROM cn_tnomenclature_usefield WHERE tnomenclature_id=?", int(id))
+	rows, err = db.DB.Query("SELECT field_name FROM cn_tnomenclature_usefield WHERE tnomenclature_id=?", answer.ID)
 	if err != nil {
 		return
 	}
@@ -151,12 +150,10 @@ func PutNomenclatureType(request []string, params map[string][]string) (answer A
 		return
 	}
 
-	var id int64
-	id, err = res.LastInsertId()
+	answer.ID, err = res.LastInsertId()
 	if err != nil {
 		return
 	}
-	answer.ID = int(id)
 
 	// Insert into [cn_tnomenclature_usefield]
 	pruf, _ := rp["use_fields"]
@@ -182,8 +179,7 @@ func PostNomenclatureType(request []string, params map[string][]string) (answer 
 	var err error
 	defer answer.make(&err, nil)
 
-	var id int64
-	id, err = strconv.ParseInt(request[1], 10, 0)
+	answer.ID, err = strconv.ParseInt(request[1], 10, 64)
 	if err != nil {
 		answer.Code = BadRequest
 		err = fmt.Errorf("Неверный ID '%s'", request[1])
@@ -204,7 +200,7 @@ func PostNomenclatureType(request []string, params map[string][]string) (answer 
 	}
 
 	// Update [tnomenclature]
-	sqlText, sqlParams := rp.MakeSQLUpdate("tnomenclature", []string{"name", "color_scheme_id"}, int(id))
+	sqlText, sqlParams := rp.MakeSQLUpdate("tnomenclature", []string{"name", "color_scheme_id"}, answer.ID)
 	if len(sqlParams) > 0 {
 		_, err = db.DB.Exec(sqlText, sqlParams...)
 		if err != nil {
@@ -218,14 +214,14 @@ func PostNomenclatureType(request []string, params map[string][]string) (answer 
 		return
 	}
 
-	_, err = db.DB.Exec("DELETE FROM cn_tnomenclature_usefield WHERE tnomenclature_id=?", int(id))
+	_, err = db.DB.Exec("DELETE FROM cn_tnomenclature_usefield WHERE tnomenclature_id=?", answer.ID)
 	if err != nil {
 		return
 	}
 
 	var ufs []string = rp["use_fields"].Value.StringArray
 	for _, uf := range ufs {
-		_, err = db.DB.Exec("INSERT INTO cn_tnomenclature_usefield(tnomenclature_id, field_name) VALUES(?,?)", int(id), uf)
+		_, err = db.DB.Exec("INSERT INTO cn_tnomenclature_usefield(tnomenclature_id, field_name) VALUES(?,?)", answer.ID, uf)
 		if err != nil {
 			return
 		}
@@ -241,8 +237,7 @@ func DeleteNomenclatureType(request []string, params map[string][]string) (answe
 	var err error
 	defer answer.make(&err, nil)
 
-	var id int64
-	id, err = strconv.ParseInt(request[1], 10, 0)
+	answer.ID, err = strconv.ParseInt(request[1], 10, 64)
 	if err != nil {
 		answer.Code = BadRequest
 		err = fmt.Errorf("Неверный ID '%s'", request[1])
@@ -250,6 +245,6 @@ func DeleteNomenclatureType(request []string, params map[string][]string) (answe
 	}
 
 	// Delete from [tnomenclature]
-	_, err = db.DB.Exec("DELETE FROM tnomenclature WHERE id=?", int(id))
+	_, err = db.DB.Exec("DELETE FROM tnomenclature WHERE id=?", answer.ID)
 	return
 }

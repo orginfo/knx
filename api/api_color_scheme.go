@@ -10,7 +10,7 @@ type APIColor struct {
 ///////////////////////////////////////////////////////////////////////////////
 // APIColorScheme
 type APIColorScheme struct {
-	ID     int        `json:"id,omitempty"`
+	ID     int64      `json:"id,omitempty"`
 	Name   string     `json:"name,omitempty"`
 	Colors []APIColor `json:"colors,omitempty"`
 }

@@ -3,7 +3,7 @@ package api
 ///////////////////////////////////////////////////////////////////////////////
 // APIResultType
 type APIResultType struct {
-	ID          int    `json:"id,omitempty"`
+	ID          int64  `json:"id,omitempty"`
 	UserName    string `json:"user_name,omitempty"`
 	CodeName    string `json:"code_name,omitempty"`
 	Description string `json:"description,omitempty"`
