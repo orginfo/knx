@@ -68,7 +68,7 @@ func GetProject(request []string, params map[string][]string) (answer Answer) {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// Request: PUT /clients/<id>/projects?contract_date=<value>[?install_date=<value>][?comment=<value>][?address=<value>]
+// Request: PUT /clients/<id>/projects?contract_date=<value>[?install_date=<value>][?comment=<value>][?address=<value>][?nr=<value>]
 //
 func PutProject(request []string, params map[string][]string) (answer Answer) {
 	answer.Message = "PutProject"
@@ -76,7 +76,7 @@ func PutProject(request []string, params map[string][]string) (answer Answer) {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// Request: POST /project/<project_id>[?contract_date=<value>][?install_date=<value>][?comment=<value>][address=<value>]
+// Request: POST /project/<project_id>[?contract_date=<value>][?install_date=<value>][?comment=<value>][address=<value>][?nr=<value>]
 //
 func PostProject(request []string, params map[string][]string) (answer Answer) {
 	answer.Message = "PostProject"

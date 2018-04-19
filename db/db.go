@@ -15,56 +15,56 @@ var DB *sql.DB
 
 var sqlDeclarations []string = []string{
 	`CREATE TABLE meta (
-    key      TEXT    UNIQUE,
-    value    TEXT )`,
+    key      TEXT NOT NULL DEFAULT '' UNIQUE,
+    value    TEXT NOT NULL DEFAULT '')`,
 
 	`CREATE TABLE user (
     id       INTEGER PRIMARY KEY,
-    login    TEXT    UNIQUE,
-    name     TEXT,
-    phone    TEXT,
-    position TEXT,
-    comment  TEXT )`,
+    login    TEXT NOT NULL DEFAULT ''UNIQUE,
+    name     TEXT NOT NULL DEFAULT '',
+    phone    TEXT NOT NULL DEFAULT '',
+    position TEXT NOT NULL DEFAULT '',
+    comment  TEXT NOT NULL DEFAULT '')`,
 
 	`CREATE TABLE client (
     id       INTEGER PRIMARY KEY,
-    name     TEXT,
-    phone    TEXT,
-    comment  TEXT )`,
+    name     TEXT NOT NULL DEFAULT '',
+    phone    TEXT NOT NULL DEFAULT '',
+    comment  TEXT NOT NULL DEFAULT '')`,
 
 	`CREATE INDEX idx_client_name ON client(name)`,
 
 	`CREATE TABLE project (
     id            INTEGER PRIMARY KEY,
-    nr            TEXT UNIQUE,
+    nr            TEXT NOT NULL DEFAULT '' UNIQUE,
     client_id     INTEGER REFERENCES client(id) NOT NULL,
     user_id       INTEGER REFERENCES user(id)   NOT NULL,
     contract_date DATETIME,
     install_date  DATETIME,
-    address       TEXT,
-    comment       TEXT )`,
+    address       TEXT NOT NULL DEFAULT '',
+    comment       TEXT NOT NULL DEFAULT '')`,
 
 	`CREATE TABLE tregion (
     id            INTEGER PRIMARY KEY,
-    name          TEXT )`,
+    name          TEXT NOT NULL DEFAULT '')`,
 
 	`CREATE TABLE region (
     id            INTEGER PRIMARY KEY,
-    description   TEXT,
+    description   TEXT NOT NULL DEFAULT '',
     project_id    INTEGER REFERENCES project(id) NOT NULL,
     tregion_id    INTEGER REFERENCES tregion(id) NOT NULL,
-    nr            INTEGER )`,
+    nr            INTEGER NOT NULL DEFAULT 0)`,
 
 	`CREATE TABLE tparam (
     id            INTEGER PRIMARY KEY,
-    name          TEXT,
-    description   TEXT )`,
+    name          TEXT NOT NULL DEFAULT '',
+    description   TEXT NOT NULL DEFAULT '')`,
 
 	`CREATE TABLE param (
     id            INTEGER PRIMARY KEY,
     tparam_id     INTEGER REFERENCES tparam(id) NOT NULL,
     region_id     INTEGER REFERENCES region(id) NOT NULL,
-    value         FLOAT )`,
+    value         FLOAT NOT NULL DEFAULT 0)`,
 
 	`CREATE TABLE cn_tparam_tregion (
     tparam_id     INTEGER REFERENCES tparam(id)  NOT NULL,
@@ -72,40 +72,40 @@ var sqlDeclarations []string = []string{
 
 	`CREATE TABLE tparamvalue (
     tparam_id     INTEGER REFERENCES tparam(id) NOT NULL,
-    value         FLOAT,
-    name          TEXT )`,
+    value         FLOAT NOT NULL DEFAULT 0,
+    name          TEXT NOT NULL DEFAULT '')`,
 
 	`CREATE TABLE tresult (
     id            INTEGER PRIMARY KEY,
-    name          TEXT,
-    description   TEXT )`,
+    name          TEXT NOT NULL DEFAULT '',
+    description   TEXT NOT NULL DEFAULT '')`,
 
 	`CREATE TABLE color_scheme (
     id              INTEGER PRIMARY KEY,
-    name            TEXT )`,
+    name            TEXT NOT NULL DEFAULT '')`,
 
 	`CREATE TABLE color (
     id              INTEGER PRIMARY KEY,
-    name            TEXT,
+    name            TEXT NOT NULL DEFAULT '',
     color_scheme_id INTEGER REFERENCES color_scheme(id) NOT NULL,
-    value           INTEGER )`,
+    value           INTEGER NOT NULL DEFAULT 0)`,
 
 	`CREATE TABLE tnomenclature (
     id              INTEGER PRIMARY KEY,
-    name            TEXT,
+    name            TEXT NOT NULL DEFAULT '',
     color_scheme_id INTEGER REFERENCES color_scheme(id) )`,
 
 	`CREATE TABLE nomenclature (
     id               INTEGER PRIMARY KEY,
     tnomenclature_id INTEGER REFERENCES tnomenclature(id) NOT NULL,
-    vendor_code      TEXT,
-    name             TEXT,
-    measure_unit      TEXT,
-    material         TEXT,
-    thickness        FLOAT,
+    vendor_code      TEXT NOT NULL DEFAULT '',
+    name             TEXT NOT NULL DEFAULT '',
+    measure_unit     TEXT NOT NULL DEFAULT '',
+    material         TEXT NOT NULL DEFAULT '',
+    thickness        FLOAT NOT NULL DEFAULT 0,
     color_id         INTEGER REFERENCES color(id),
-    size             FLOAT,
-    division         TEXT,
+    size             FLOAT NOT NULL DEFAULT 0,
+    division         TEXT NOT NULL DEFAULT '',
     division_service_nomenclature_id INTEGER REFERENCES nomenclature(id) )`,
 
 	`CREATE INDEX idx_nomenclature_name ON nomenclature(name)`,
@@ -115,23 +115,23 @@ var sqlDeclarations []string = []string{
     tresult_id      INTEGER REFERENCES tresult(id) NOT NULL,
     region_id       INTEGER REFERENCES region(id) NOT NULL,
     nomenclature_id INTEGER REFERENCES nomenclature(id),
-    value           FLOAT )`,
+    value           FLOAT NOT NULL DEFAULT 0)`,
 
 	`CREATE TABLE cn_tnomenclature_usefield (
     tnomenclature_id INTEGER REFERENCES tnomenclature(id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
-    field_name       TEXT )`,
+    field_name       TEXT NOT NULL DEFAULT '')`,
 
 	`CREATE TABLE tcomponent (
     id              INTEGER PRIMARY KEY,
-    name            TEXT )`,
+    name            TEXT NOT NULL DEFAULT '')`,
 
 	`CREATE TABLE tcalculation (
     id              INTEGER PRIMARY KEY,
-    name            TEXT )`,
+    name            TEXT NOT NULL DEFAULT '')`,
 
 	`CREATE TABLE tpart (
     id              INTEGER PRIMARY KEY,
-    name            TEXT,
+    name            TEXT NOT NULL DEFAULT '',
     tcomponent_id   INTEGER REFERENCES tcomponent(id) NOT NULL,
     tcalculation_id INTEGER REFERENCES tcalculation(id) )`,
 
@@ -157,8 +157,8 @@ var sqlDeclarations []string = []string{
 	`CREATE TABLE price (
     nomenclature_id INTEGER REFERENCES nomenclature(id) NOT NULL,
     date            DATETIME NOT NULL,
-    cost_price      INTEGER NOT NULL DEFAULT(0),
-    price           INTEGER NOT NULL DEFAULT(0),
+    cost_price      INTEGER NOT NULL DEFAULT 0,
+    price           INTEGER NOT NULL DEFAULT 0,
     UNIQUE(nomenclature_id, date) )`,
 
 	`CREATE TABLE cn_tparam_tpart (
@@ -168,15 +168,15 @@ var sqlDeclarations []string = []string{
 
 	`CREATE TABLE cn_tparamvalue_nomenclature (
     tparam_id       INTEGER REFERENCES tparam(id),
-    value           FLOAT,
-    nomenclature_id INTEGER REFERENCES nomenclature(id),
+    value           FLOAT NOT NULL DEFAULT 0,
+    nomenclature_id INTEGER REFERENCES nomenclature(id) NOT NULL,
     UNIQUE(tparam_id, value, nomenclature_id) )`,
 
 	`CREATE TABLE cn_tparamvalue_tparamvalue (
-    tparam_id           INTEGER REFERENCES tparam(id),
-    value               FLOAT,
-    dependent_tparam_id INTEGER REFERENCES tparam(id),
-    dependent_value     FLOAT,
+    tparam_id           INTEGER REFERENCES tparam(id) NOT NULL,
+    value               FLOAT NOT NULL DEFAULT 0,
+    dependent_tparam_id INTEGER REFERENCES tparam(id) NOT NULL,
+    dependent_value     FLOAT NOT NULL DEFAULT 0,
     CHECK(tparam_id <> dependent_tparam_id),
     UNIQUE(tparam_id,value,dependent_tparam_id, dependent_value) )`,
 }
@@ -186,7 +186,7 @@ const (
 )
 
 var MetaValues map[string]string = map[string]string{
-	MetaKeyVersion: "2018-04-18",
+	MetaKeyVersion: "2018-04-19",
 }
 
 // convertDB - convert DB from one version to another
