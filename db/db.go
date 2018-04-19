@@ -231,7 +231,7 @@ func createDB(db *sql.DB) (err error) {
 		}
 	}
 
-	// [tparam] [tparamvalue] [cn_tparam_tregion] [cn_tparamvalue_tparamvalue]
+	// [tparam] [tparamvalue] [cn_tparam_tregion]
 	for id, tparam := range calc.Params {
 		_, err = tx.Exec("INSERT INTO tparam(id,name,description) VALUES(?,?,?)", id, tparam.Name, tparam.Description)
 		if err != nil {
@@ -256,6 +256,18 @@ func createDB(db *sql.DB) (err error) {
 			if err != nil {
 				return
 			}
+		}
+		for _, rt := range tparam.RegionTypes {
+			_, err = tx.Exec("INSERT INTO cn_tparam_tregion(tparam_id,tregion_id) VALUES(?,?)", id, rt)
+			if err != nil {
+				return
+			}
+		}
+	}
+
+	// [cn_tparamvalue_tparamvalue]
+	for id, tparam := range calc.Params {
+		for _, value := range tparam.Values {
 			for dependendParamID, dependentValues := range value.DependentParams {
 				// For empty value list add -1 means value is not set and is not available to choose
 				if len(dependentValues) == 0 {
@@ -273,12 +285,6 @@ func createDB(db *sql.DB) (err error) {
 						return
 					}
 				}
-			}
-		}
-		for _, rt := range tparam.RegionTypes {
-			_, err = tx.Exec("INSERT INTO cn_tparam_tregion(tparam_id,tregion_id) VALUES(?,?)", id, rt)
-			if err != nil {
-				return
 			}
 		}
 	}
