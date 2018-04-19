@@ -12,8 +12,8 @@ import (
 type APIProject struct {
 	ID           int64      `json:"id,omitempty"`
 	Nr           string     `json:"nr,omitempty"`
-	ContractDate string     `json:"contract_date,omitempty"`
-	InstallDate  string     `json:"install_date,omitempty"`
+	ContractDate *string    `json:"contract_date,omitempty"`
+	InstallDate  *string    `json:"install_date,omitempty"`
 	Address      string     `json:"address,omitempty"`
 	Comment      string     `json:"comment,omitempty"`
 	User         *APIUser   `json:"user,omitempty"`
@@ -166,7 +166,47 @@ func GetProject(request []string, params map[string][]string) (answer Answer) {
 // Request: PUT /clients/<id>/projects?contract_date=<value>[?install_date=<value>][?comment=<value>][?address=<value>][?nr=<value>]
 //
 func PutProject(request []string, params map[string][]string) (answer Answer) {
-	answer.Message = "PutProject"
+	var err error
+	defer answer.make(&err, nil)
+
+	var clientID int64
+	var userID int64 = 1 // Use 1 for default user, TODO: later make sessions and get user id from session, which opened by login-api
+	clientID, err = strconv.ParseInt(request[1], 10, 64)
+	if err != nil {
+		answer.Code = BadRequest
+		err = fmt.Errorf("Неверный ID '%s'", request[1])
+		return
+	}
+
+	// Parse user request parameters
+	var rp RequestParams = RequestParams{
+		"contract_date": {Optional: false, Type: String},
+		"install_date":  {Optional: true, Type: String},
+		"comment":       {Optional: true, Type: String},
+		"address":       {Optional: true, Type: String},
+		"nr":            {Optional: true, Type: String},
+	}
+
+	err = rp.Parse(params)
+	if err != nil {
+		answer.Code = BadRequest
+		return
+	}
+
+	// Add 2 parameters for SQL-query: user_id and client_id
+	rp["user_id"] = RequestParam{Type: Int, Value: RequestParamValue{Type: Int, IntValue: userID}}
+	rp["client_id"] = RequestParam{Type: Int, Value: RequestParamValue{Type: Int, IntValue: clientID}}
+
+	// Insert into [project]
+	sqlText, sqlParams := rp.MakeSQLInsert("project", []string{"contract_date", "install_date", "comment", "address", "nr", "user_id", "client_id"})
+	var res sql.Result
+	res, err = db.DB.Exec(sqlText, sqlParams...)
+	if err != nil {
+		return
+	}
+
+	answer.ID, err = res.LastInsertId()
+
 	return
 }
 
@@ -174,7 +214,40 @@ func PutProject(request []string, params map[string][]string) (answer Answer) {
 // Request: POST /project/<project_id>[?contract_date=<value>][?install_date=<value>][?comment=<value>][address=<value>][?nr=<value>]
 //
 func PostProject(request []string, params map[string][]string) (answer Answer) {
-	answer.Message = "PostProject"
+	var err error
+	defer answer.make(&err, nil)
+
+	answer.ID, err = strconv.ParseInt(request[1], 10, 64)
+	if err != nil {
+		answer.Code = BadRequest
+		err = fmt.Errorf("Неверный ID '%s'", request[1])
+		return
+	}
+
+	// Parse user request parameters
+	var rp RequestParams = RequestParams{
+		"contract_date": {Optional: true, Type: String},
+		"install_date":  {Optional: true, Type: String},
+		"comment":       {Optional: true, Type: String},
+		"address":       {Optional: true, Type: String},
+		"nr":            {Optional: true, Type: String},
+	}
+
+	err = rp.Parse(params)
+	if err != nil {
+		answer.Code = BadRequest
+		return
+	}
+
+	// Update [project]
+	sqlText, sqlParams := rp.MakeSQLUpdate("project", []string{"contract_date", "install_date", "comment", "address", "nr"}, answer.ID)
+	if len(sqlParams) > 0 {
+		_, err = db.DB.Exec(sqlText, sqlParams...)
+		if err != nil {
+			return
+		}
+	}
+
 	return
 }
 
