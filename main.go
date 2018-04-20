@@ -17,9 +17,9 @@ func (subdomains Subdomains) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	subdomain := domainParts[0]
 
-	// if no subdomain, redirect to subdomain "www"
+	// if no subdomain, redirect to subdomain "api"
 	if len(domainParts) < 2 { /*TODO: 3 for real address: www.knx.ru, 2 for test: www.localhost*/
-		subdomain = "www"
+		subdomain = "api"
 	}
 
 	if mux := subdomains[subdomain]; mux != nil {

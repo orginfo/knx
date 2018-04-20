@@ -4,8 +4,9 @@ import (
 	"html/template"
 )
 
-var testTemplate *template.Template
+var Templates map[string]*template.Template
 
 func init() {
-	testTemplate = template.Must(template.ParseFiles("../html/test.html"))
+	Templates = make(map[string]*template.Template)
+	Templates["projects"] = template.Must(template.ParseFiles("../html/projects.html"))
 }
