@@ -3,11 +3,10 @@ package db
 import (
 	"database/sql"
 	"fmt"
-	"log"
 	"os"
 	"path/filepath"
 
-	s3 "github.com/mattn/go-sqlite3"
+	_ "github.com/mattn/go-sqlite3"
 	"knx/calc"
 )
 
@@ -402,9 +401,6 @@ func InitDB(dbPath string) (db *sql.DB, err error) {
 }
 
 func init() {
-	libVersion, libVersionNumber, sourceID := s3.Version()
-	log.Printf("SQLITE3 Version: %v %v %v\n", libVersion, libVersionNumber, sourceID)
-
 	// Init DB
 	dbPath := "../data/db.sqlite3"
 	if len(os.Args) > 1 {
@@ -417,4 +413,7 @@ func init() {
 		fmt.Printf("An error occured while opening db '%s': %v\n", dbPath, err)
 		return
 	}
+
+	// Status
+	fmt.Println("KNX is running ...")
 }
