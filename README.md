@@ -23,6 +23,7 @@ a@md:~$ mkdir -p /home/a/gocode/src
 a@md:~$ mkdir -p /home/a/gocode/bin
 a@md:~$ mkdir -p /home/a/gocode/html
 a@md:~$ echo "test" > /home/a/gocode/html/test.html
+a@md:~$ echo "projects" > /home/a/gocode/html/projects.html
 ```
 3. Прописываем пути до go, gopath, goroot:
 ``` diff
