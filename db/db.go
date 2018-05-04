@@ -19,7 +19,7 @@ var sqlDeclarations []string = []string{
 
 	`CREATE TABLE user (
     id       INTEGER PRIMARY KEY,
-    login    TEXT NOT NULL DEFAULT ''UNIQUE,
+    login    TEXT NOT NULL DEFAULT '' UNIQUE,
     name     TEXT NOT NULL DEFAULT '',
     phone    TEXT NOT NULL DEFAULT '',
     position TEXT NOT NULL DEFAULT '',
@@ -50,19 +50,20 @@ var sqlDeclarations []string = []string{
 	`CREATE TABLE region (
     id            INTEGER PRIMARY KEY,
     description   TEXT NOT NULL DEFAULT '',
-    project_id    INTEGER REFERENCES project(id) NOT NULL,
+    project_id    INTEGER REFERENCES project(id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
     tregion_id    INTEGER REFERENCES tregion(id) NOT NULL,
     nr            INTEGER NOT NULL DEFAULT 0)`,
 
 	`CREATE TABLE tparam (
     id            INTEGER PRIMARY KEY,
+    prio          INTEGER NOT NULL DEFAULT 0,
     name          TEXT NOT NULL DEFAULT '',
     description   TEXT NOT NULL DEFAULT '')`,
 
 	`CREATE TABLE param (
     id            INTEGER PRIMARY KEY,
     tparam_id     INTEGER REFERENCES tparam(id) NOT NULL,
-    region_id     INTEGER REFERENCES region(id) NOT NULL,
+    region_id     INTEGER REFERENCES region(id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
     value         FLOAT NOT NULL DEFAULT 0)`,
 
 	`CREATE TABLE cn_tparam_tregion (
@@ -112,7 +113,7 @@ var sqlDeclarations []string = []string{
 	`CREATE TABLE result (
     id              INTEGER PRIMARY KEY,
     tresult_id      INTEGER REFERENCES tresult(id) NOT NULL,
-    region_id       INTEGER REFERENCES region(id) NOT NULL,
+    region_id       INTEGER REFERENCES region(id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
     nomenclature_id INTEGER REFERENCES nomenclature(id),
     value           FLOAT NOT NULL DEFAULT 0)`,
 
@@ -145,13 +146,14 @@ var sqlDeclarations []string = []string{
 	`CREATE TABLE component (
     id              INTEGER PRIMARY KEY,
     tcomponent_id   INTEGER REFERENCES tcomponent(id) NOT NULL,
-    region_id       INTEGER REFERENCES region(id) NOT NULL )`,
+    region_id       INTEGER REFERENCES region(id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL )`,
 
 	`CREATE TABLE part (
     id              INTEGER PRIMARY KEY,
     tpart_id        INTEGER REFERENCES tpart(id) NOT NULL,
-    component_id    INTEGER REFERENCES component(id) NOT NULL,
-    nomenclature_id INTEGER REFERENCES nomenclature(id) )`,
+    component_id    INTEGER REFERENCES component(id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
+    nomenclature_id INTEGER REFERENCES nomenclature(id) ON DELETE SET NULL ON UPDATE CASCADE,
+    UNIQUE(tpart_id, component_id) )`,
 
 	`CREATE TABLE price (
     nomenclature_id INTEGER REFERENCES nomenclature(id) NOT NULL,
@@ -177,7 +179,15 @@ var sqlDeclarations []string = []string{
     dependent_tparam_id INTEGER REFERENCES tparam(id) NOT NULL,
     dependent_value     FLOAT NOT NULL DEFAULT 0,
     CHECK(tparam_id <> dependent_tparam_id),
-    UNIQUE(tparam_id,value,dependent_tparam_id, dependent_value) )`,
+    UNIQUE(tparam_id,value,dependent_tparam_id,dependent_value) )`,
+
+	`CREATE TRIGGER check_tparamvalue_dependencies
+    BEFORE INSERT ON cn_tparamvalue_tparamvalue
+    BEGIN
+        SELECT RAISE(FAIL, "parameter dependencies conflict with priorities")
+        FROM tparam p1 INNER JOIN tparam p2 ON p1.id = NEW.tparam_id AND p2.id = NEW.dependent_tparam_id
+        WHERE p1.prio >= p2.prio;
+    END`,
 }
 
 const (
@@ -185,7 +195,7 @@ const (
 )
 
 var MetaValues map[string]string = map[string]string{
-	MetaKeyVersion: "2018-04-19",
+	MetaKeyVersion: "2018-04-25",
 }
 
 // convertDB - convert DB from one version to another
@@ -232,7 +242,7 @@ func createDB(db *sql.DB) (err error) {
 
 	// [tparam] [tparamvalue] [cn_tparam_tregion]
 	for id, tparam := range calc.Params {
-		_, err = tx.Exec("INSERT INTO tparam(id,name,description) VALUES(?,?,?)", id, tparam.Name, tparam.Description)
+		_, err = tx.Exec("INSERT INTO tparam(id,prio,name,description) VALUES(?,?,?,?)", id, tparam.Prio, tparam.Name, tparam.Description)
 		if err != nil {
 			return
 		}

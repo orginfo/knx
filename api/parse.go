@@ -18,6 +18,7 @@ const (
 	StringArray
 	IntStringMap
 	FloatStringMap
+	IntFloatMap
 )
 
 type RequestParamValue struct {
@@ -29,6 +30,7 @@ type RequestParamValue struct {
 	StringArray    []string
 	IntStringMap   map[int64]string
 	FloatStringMap map[float64]string
+	IntFloatMap    map[int64]float64
 }
 
 type RequestParam struct {
@@ -142,6 +144,33 @@ func parseIntName(str string) (result map[int64]string, err error) {
 	return
 }
 
+// parseIntFloat
+func parseIntFloat(str string) (result map[int64]float64, err error) {
+	var values map[string]string
+	values, err = parseValueName(str)
+	if err != nil {
+		return
+	}
+
+	result = make(map[int64]float64)
+
+	for v, name := range values {
+		// Преобразовываем ключ к типу int
+		var key int64
+		key, err = strconv.ParseInt(v, 10, 64)
+		if err != nil {
+			return
+		}
+		var value float64
+		value, err = strconv.ParseFloat(name, 32)
+		if err != nil {
+			return
+		}
+		result[key] = value
+	}
+	return
+}
+
 // Value - return value of RequestParamValue dependent on its type
 func (v *RequestParamValue) Value() interface{} {
 	switch v.Type {
@@ -159,6 +188,8 @@ func (v *RequestParamValue) Value() interface{} {
 		return v.IntStringMap
 	case FloatStringMap:
 		return v.FloatStringMap
+	case IntFloatMap:
+		return v.IntFloatMap
 	default:
 		return nil
 	}
@@ -181,6 +212,8 @@ func (rp *RequestParamValue) Parse(s string) (err error) {
 		rp.IntStringMap, err = parseIntName(s)
 	case FloatStringMap:
 		rp.FloatStringMap, err = parseFloatName(s)
+	case IntFloatMap:
+		rp.IntFloatMap, err = parseIntFloat(str)
 	default:
 		err = fmt.Errorf("Неизвестный тип параметра '%d'", rp.Type)
 	}
@@ -213,12 +246,12 @@ func (rps *RequestParams) Parse(params map[string][]string) error {
 }
 
 // MakeSQLInsert - construct SQL-INSERT request and return text of SQL and list of values as parmeters for the SQL
-func (rps *RequestParams) MakeSQLInsert(tableName string, fields []string) (sqlText string, sqlParams []interface{}) {
+func (rps RequestParams) MakeSQLInsert(tableName string, fields []string) (sqlText string, sqlParams []interface{}) {
 	var fieldDesc bytes.Buffer
 	var paramDesc bytes.Buffer
 
 	for _, f := range fields {
-		rp, ok := (*rps)[f]
+		rp, ok := rps[f]
 		if !ok || !rp.Exists() {
 			continue
 		}
@@ -241,11 +274,11 @@ func (rps *RequestParams) MakeSQLInsert(tableName string, fields []string) (sqlT
 }
 
 // MakeSQLUpdate - construct SQL-UPDATE request and return text of SQL and list of values as parmeters for the SQL
-func (rps *RequestParams) MakeSQLUpdate(tableName string, fields []string, id int64) (sqlText string, sqlParams []interface{}) {
+func (rps RequestParams) MakeSQLUpdate(tableName string, fields []string, id int64) (sqlText string, sqlParams []interface{}) {
 	var fieldDesc bytes.Buffer
 
 	for _, f := range fields {
-		rp, ok := (*rps)[f]
+		rp, ok := rps[f]
 		if !ok || !rp.Exists() {
 			continue
 		}
@@ -266,11 +299,11 @@ func (rps *RequestParams) MakeSQLUpdate(tableName string, fields []string, id in
 }
 
 // Exists - checks if the given parameter set up by user or not
-func (p *RequestParam) Exists() bool {
+func (p RequestParam) Exists() bool {
 	return p.Value.Type != Nil
 }
 
 // GetValue - return value of the parameter in native form
-func (p *RequestParam) GetValue() interface{} {
+func (p RequestParam) GetValue() interface{} {
 	return p.Value.Value()
 }

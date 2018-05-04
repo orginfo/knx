@@ -4,6 +4,7 @@ package api
 // APIParamType
 type APIParamType struct {
 	ID          int64  `json:"id,omitempty"`
+	Prio        int    `json:"prio,omitempty"`
 	UserName    string `json:"user_name,omitempty"`
 	CodeName    string `json:"code_name,omitempty"`
 	Description string `json:"description,omitempty"`

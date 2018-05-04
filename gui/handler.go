@@ -24,7 +24,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	// Ask API for the whole list of projects
 	resp, err := http.Get("http://localhost:8080/v0/projects")
 	if err != nil {
-		data.Message = fmt.Sprintf("%v", err)
+		data.Message = err.Error()
 		return
 	}
 
@@ -36,7 +36,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 
 	// Decode request answer into JSON
 	if err := json.NewDecoder(resp.Body).Decode(&data); err != nil {
-		data.Message = fmt.Sprintf("JSON Decode error: %s", err)
+		data.Message = fmt.Sprintf("JSON Decode error: %s", err.Error())
 		return
 	}
 	resp.Body.Close()

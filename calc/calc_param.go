@@ -49,6 +49,10 @@ type ParamValue struct {
 }
 
 type Param struct {
+	// Parameter priority, determines can it depend on another parameter or not
+	// To be dependent the parameter should have higher priority than the main parameter
+	Prio int
+
 	// Parameter name, can be used as label in GUI
 	Name string
 
@@ -215,6 +219,7 @@ var Params = [...]Param{
 		},
 	},
 	PTColumnStepSpace: {
+		Prio: 1,
 		Name: "Шаг столбов, остаток",
 		Values: []ParamValue{
 			{Value: ColumnStepSpaceEnd, Name: "Остаток в конце"},
@@ -318,6 +323,7 @@ var Params = [...]Param{
 		},
 	},
 	PTColorColumnPaint: {
+		Prio:        1,
 		Name:        "Цвет",
 		Description: "Цвет окрашивания столбов",
 		Values: []ParamValue{
@@ -398,6 +404,7 @@ var Params = [...]Param{
 		},
 	},
 	PTColorCanvas: {
+		Prio:        1,
 		Name:        "Цвет",
 		Description: "Цвет полотна забора",
 		Values: []ParamValue{
@@ -405,6 +412,7 @@ var Params = [...]Param{
 		},
 	},
 	PTColorCanvasPaint: {
+		Prio:        1,
 		Name:        "Цвет",
 		Description: "Цвет окрашивания полотна",
 		Values: []ParamValue{
@@ -412,6 +420,7 @@ var Params = [...]Param{
 		},
 	},
 	PTColorFix: {
+		Prio:        1,
 		Name:        "Цвет",
 		Description: "Цвет крепежа",
 		Values: []ParamValue{
@@ -500,6 +509,7 @@ var Params = [...]Param{
 		},
 	},
 	PTColorHStick: {
+		Prio:        1,
 		Name:        "Цвет",
 		Description: "Цвет прожилин",
 		Values: []ParamValue{
