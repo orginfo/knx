@@ -213,7 +213,7 @@ func (rp *RequestParamValue) Parse(s string) (err error) {
 	case FloatStringMap:
 		rp.FloatStringMap, err = parseFloatName(s)
 	case IntFloatMap:
-		rp.IntFloatMap, err = parseIntFloat(str)
+		rp.IntFloatMap, err = parseIntFloat(s)
 	default:
 		err = fmt.Errorf("Неизвестный тип параметра '%d'", rp.Type)
 	}

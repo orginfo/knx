@@ -324,9 +324,9 @@ func PutRegion(request []string, params map[string][]string) (answer Answer) {
 	}
 
 	// Correct dependent param and part values
-	var resParams map[calc.ParamTypeID]db.DBParamValue
+	var resParams map[int64]db.DBParamValue
 	var resParts map[int64]db.DBPartNomenclatureValue
-	resParams, resParts, err = db.GetParamPartValues(answer.ID, map[calc.ParamTypeID]float64{}, map[int64]int64{})
+	resParams, resParts, err = db.GetParamPartValues(answer.ID, map[int64]float64{}, map[int64]int64{})
 	if err != nil {
 		return
 	}
@@ -341,8 +341,7 @@ func PostRegion(request []string, params map[string][]string) (answer Answer) {
 	var err error
 	defer answer.make(&err, nil)
 
-	var projectID int64
-	projectID, err = strconv.ParseInt(request[1], 10, 64)
+	_, err = strconv.ParseInt(request[1], 10, 64)
 	if err != nil {
 		answer.Code = BadRequest
 		err = fmt.Errorf("Неверный ID проекта '%s'", request[1])
@@ -377,6 +376,24 @@ func PostRegion(request []string, params map[string][]string) (answer Answer) {
 			return
 		}
 	}
+
+	// Update region params and dependent parts
+	pp := rp["param"]
+	if !pp.Exists() {
+		return
+	}
+
+	// Get user set parameters as map with key [paramID] and value [paramValue]
+	regionParams := pp.Value.IntFloatMap
+
+	// Correct dependent param and part values
+	var resParams map[int64]db.DBParamValue
+	var resParts map[int64]db.DBPartNomenclatureValue
+	resParams, resParts, err = db.GetParamPartValues(answer.ID, regionParams, map[int64]int64{})
+	if err != nil {
+		return
+	}
+	err = db.WriteParamPartValues(answer.ID, resParams, resParts)
 
 	return
 }

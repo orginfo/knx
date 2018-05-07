@@ -3,7 +3,6 @@ package db
 import (
 	"database/sql"
 	"fmt"
-	"knx/calc"
 )
 
 type DBParamValue struct {
@@ -21,15 +20,15 @@ type DBPartNomenclatureValue struct {
 // key of nomenclature value is an ID of part type
 // Input map is local param values entered by user to replace values from DB
 //
-func GetParamPartValues(regionID int64, localParams map[calc.ParamTypeID]float64, localParts map[int64]int64) (resParams map[calc.ParamTypeID]DBParamValue, resParts map[int64]DBPartNomenclatureValue, err error) {
-	resParams = make(map[calc.ParamTypeID]DBParamValue)
+func GetParamPartValues(regionID int64, localParams map[int64]float64, localParts map[int64]int64) (resParams map[int64]DBParamValue, resParts map[int64]DBPartNomenclatureValue, err error) {
+	resParams = make(map[int64]DBParamValue)
 	resParts = make(map[int64]DBPartNomenclatureValue)
 
 	// Collect all the parameter DB values + local values
 	// Order by priority
 	type DBParam struct {
 		Prio        int
-		ParamTypeID calc.ParamTypeID
+		ParamTypeID int64
 		Value       float64
 	}
 	var regionParams []DBParam
@@ -263,27 +262,44 @@ func GetParamPartValues(regionID int64, localParams map[calc.ParamTypeID]float64
 
 		resParts[tpartID] = partValue
 	}
-	err = fmt.Errorf("Params: %v Parts: %v", resParams, resParts)
+
 	return
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // WriteParamPartValues - write into db values of parameters and parts for the given region
 //
-func WriteParamPartValues(regionID int64, params map[calc.ParamTypeID]DBParamValue, parts map[int64]DBPartNomenclatureValue) (err error) {
+func WriteParamPartValues(regionID int64, params map[int64]DBParamValue, parts map[int64]DBPartNomenclatureValue) (err error) {
+	// Begin transaction
+	var tx *sql.Tx
+	tx, err = DB.Begin()
+	if err != nil {
+		return
+	}
+
+	// Commit or rollback transaction at the end
+	defer func() {
+		if err != nil {
+			tx.Rollback()
+		} else {
+			err = tx.Commit()
+		}
+	}()
+
 	// Param values
 	for tparamID, paramValue := range params {
-		_, err = DB.Exec("UPDATE param SET value=? WHERE region_id=? AND tparam_id=?", paramValue.NewValue, regionID, tparamID)
+		_, err = tx.Exec("UPDATE param SET value=? WHERE region_id=? AND tparam_id=?", paramValue.NewValue, regionID, tparamID)
 		if err != nil {
 			return
 		}
 	}
 	// Part values
 	for tpartID, partValue := range parts {
-		_, err = DB.Exec("UPDATE part SET nomenclature_id=? WHERE tpart_id=? AND component_id IN (SELECT id FROM component WHERE region_id=?)", partValue.NewID, tpartID, regionID)
+		_, err = tx.Exec("UPDATE part SET nomenclature_id=? WHERE tpart_id=? AND component_id IN (SELECT id FROM component WHERE region_id=?)", partValue.NewID, tpartID, regionID)
 		if err != nil {
 			return
 		}
 	}
+
 	return
 }
