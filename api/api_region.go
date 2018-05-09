@@ -1,6 +1,7 @@
 package api
 
 import (
+	"bytes"
 	"database/sql"
 	"fmt"
 	"knx/calc"
@@ -23,8 +24,7 @@ const (
 ///////////////////////////////////////////////////////////////////////////////
 // APIParam
 type APIParam struct {
-	ID        int64           `json:"id,omitempty"`
-	ParamType APIParamType    `json:"param_type,omitempty"`
+	ParamType *APIParamType   `json:"param_type,omitempty"`
 	Value     float64         `json:"value,omitempty"`
 	Control   ControlType     `json:"control,omitempty"` //Тип элемента интерфейса: поле для ввода, комбо-бокс, галочка,...
 	Enabled   bool            `json:"enabled,omitempty"`
@@ -33,21 +33,11 @@ type APIParam struct {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// APIPartNomenclature
-type APIPartNomenclature struct {
-	ID    int64  `json:"id,omitempty"`
-	Name  string `json:"name,omitempty"`
-	List  bool   `json:"list,omitempty"`  // Показывает, есть ли список для выбора номенклатуры, или это значение не может поменяться
-	Empty bool   `json:"empty,omitempty"` // Показывает, может ли не указывыть номенклатуру для этой части
-}
-
-///////////////////////////////////////////////////////////////////////////////
 // APIPart
 type APIPart struct {
-	ID                int64               `json:"id,omitempty"`
-	Name              string              `json:"name,omitempty"`
-	CalculationTypeID int64               `json:"calculation_type_id,omitempty"`
-	Nomenclature      APIPartNomenclature `json:"nomenclature,omitempty"`
+	APIPartType
+	Value     *APINomenclature   `json:"value,omitempty"`
+	ValueList []*APINomenclature `json:"value_list,omitempty"`
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -87,7 +77,6 @@ type APIRegion struct {
 //			}
 //			params map(int)
 //				{
-//                  id int
 //					param_type   {id int, name string, description string}
 //					value        float
 //					control      int /*Тип элемента интерфейса: поле для ввода, комбо-бокс, галочка,...*/
@@ -111,12 +100,16 @@ type APIRegion struct {
 //					id   int
 //					name string
 //					calculation_type_id int
-//					nomenclature {
+//					value {
 //						id    int
 //						name  string
-//						list  bool /*показывает, есть ли список для выбора номенклатуры, или это значение не может поменяться*/
-//						empty bool /*показывает, может ли не указывыть номенклатуру для этой части*/
 //					}
+//                  value_list	[
+//						{
+//							id int
+//							name string
+//						}
+//					]
 //				}
 //			components map(int)
 //				{
@@ -228,6 +221,160 @@ func GetRegion(request []string, params map[string][]string) (answer Answer) {
 		return
 	}
 	res.RegionType.CodeName = calc.Regions[res.RegionType.ID].Name
+
+	// Get name and description for all the parameters
+	var mapParamTypes map[int64]APIParamType = make(map[int64]APIParamType)
+	func() {
+		var rows *sql.Rows
+		rows, err = db.DB.Query(`SELECT id, name, description FROM tparam`)
+		if err != nil {
+			return
+		}
+		defer rows.Close()
+		for rows.Next() {
+			var tp APIParamType
+			err = rows.Scan(&tp.ID, &tp.UserName, &tp.Description)
+			if err != nil {
+				return
+			}
+			mapParamTypes[tp.ID] = tp
+		}
+		err = rows.Err()
+		return
+	}()
+	if err != nil {
+		return
+	}
+
+	// Get all the params and parts of the region
+	var resParams map[int64]db.DBParamValue
+	var resParts map[int64]db.DBPartNomenclatureValue
+	resParams, resParts, err = db.GetParamPartValues(answer.ID, map[int64]float64{}, map[int64]int64{})
+	if err != nil {
+		return
+	}
+	if len(resParams) > 0 {
+		res.Params = make(map[int64]APIParam)
+	}
+	for tparamID, paramValue := range resParams {
+		var param APIParam
+		tp := mapParamTypes[tparamID]
+		param.ParamType = &tp
+		param.Value = paramValue.Value
+		for pvalue, pname := range paramValue.ValueList {
+			param.ValueList = append(param.ValueList, APIParamValue{Value: pvalue, Name: pname})
+		}
+		param.SetGUIFields()
+		res.Params[tparamID] = param
+	}
+
+	var mapNomenclature map[int64]string // Nomenclature names loaded from DB
+	var listNomenclature bytes.Buffer    // list of ID to filter SQL nomenclature
+
+	if len(resParts) > 0 {
+		res.Parts = make(map[int64]APIPart)
+		mapNomenclature = make(map[int64]string)
+	}
+	for tpartID, partValue := range resParts {
+		var part APIPart
+		part.ID = tpartID
+
+		if partValue.ID != nil {
+			part.Value = new(APINomenclature)
+			part.Value.ID = *partValue.ID
+		}
+
+		for _, nomenclatureID := range partValue.IDList {
+			if nomenclatureID == nil {
+				part.ValueList = append(part.ValueList, nil)
+			} else {
+				part.ValueList = append(part.ValueList, &APINomenclature{ID: *nomenclatureID})
+				listNomenclature.WriteString(fmt.Sprintf("%n,", nomenclatureID))
+			}
+		}
+		// Add "0" to close last comma
+		listNomenclature.WriteString("0")
+
+		// Get nomenclature info from DB
+		func() {
+			var rows *sql.Rows
+			rows, err = db.DB.Query(fmt.Sprintf(`SELECT id, name FROM nomenclature WHERE id IN (%s)`, listNomenclature.String()))
+			if err != nil {
+				return
+			}
+			defer rows.Close()
+			for rows.Next() {
+				var ID int64
+				var name string
+				err = rows.Scan(&ID, &name)
+				if err != nil {
+					return
+				}
+				mapNomenclature[ID] = name
+			}
+			err = rows.Err()
+			return
+		}()
+		if err != nil {
+			return
+		}
+
+		// Set up nomenclature info
+		if part.Value != nil {
+			part.Value.Name = mapNomenclature[part.Value.ID]
+		}
+
+		for i := range part.ValueList {
+			if part.ValueList[i] != nil {
+				part.ValueList[i].Name = mapNomenclature[part.ValueList[i].ID]
+			}
+		}
+
+		res.Parts[tpartID] = part
+	}
+
+	// Select components and parts from DB
+	if len(res.Parts) > 0 {
+		res.Components = make(map[int64]APIComponent)
+	}
+	func() {
+		var rows *sql.Rows
+		rows, err = db.DB.Query(`SELECT c.id, t.id, t.name, tp.id, tp.name, tp.tcalculation_id
+			FROM component c INNER JOIN tcomponent t ON c.tcomponent_id = t.id
+			LEFT JOIN part p ON p.component_id = c.id
+			LEFT JOIN tpart tp ON p.tpart_id = tp.id
+			WHERE c.region_id = ?
+			ORDER BY c.id, p.id`, answer.ID)
+		if err != nil {
+			return
+		}
+		defer rows.Close()
+		for rows.Next() {
+			var ct APIComponentType
+			var p APIPart
+			var c APIComponent = APIComponent{ComponentType: &ct}
+			err = rows.Scan(&c.ID, &ct.ID, &ct.Name, &p.ID, &p.Name, &p.CalculationTypeID)
+			if err != nil {
+				return
+			}
+			if p0, ok := res.Parts[p.ID]; ok {
+				p0.Name = p.Name
+				p0.CalculationTypeID = p.CalculationTypeID
+				res.Parts[p.ID] = p0
+			}
+			if _, ok := res.Components[c.ID]; !ok {
+				res.Components[c.ID] = c
+			}
+			c0 := res.Components[c.ID]
+			c0.PartTypes = append(c0.PartTypes, p.APIPartType)
+			res.Components[c.ID] = c0
+		}
+		err = rows.Err()
+		return
+	}()
+	if err != nil {
+		return
+	}
 
 	return
 }
@@ -423,4 +570,53 @@ func DeleteRegion(request []string, params map[string][]string) (answer Answer) 
 	// Delete from [region]
 	_, err = db.DB.Exec("DELETE FROM region WHERE id=? AND project_id=?", answer.ID, projectID)
 	return
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// SetGUIFields - set up fields for GUI depending on param type, value list and current value
+func (param *APIParam) SetGUIFields() {
+	if param.ParamType == nil {
+		return
+	}
+
+	if param.ParamType.ID < 0 || param.ParamType.ID >= int64(len(calc.Params)) {
+		return
+	}
+
+	calcParam := calc.Params[param.ParamType.ID]
+
+	// If possible value list was filtered to 0 values, disable param ort make it invisible
+	if len(param.ValueList) == 0 && len(calcParam.Values) > 1 {
+		param.Disable()
+	} else {
+		param.Enable()
+	}
+
+	// Set up control
+	if len(calcParam.Values) <= 1 {
+		param.Control = CTNumericEditBox // or CTEditBox
+	} else if calcParam.Values[0].Name == calc.BoolParamName {
+		param.Control = CTCheckBox
+		if len(param.ValueList) == 1 {
+			param.Disable()
+		}
+	} else if calcParam.Values[0].Name == calc.ColorParamName {
+		param.Control = CTChooseColorBtn
+	} else {
+		param.Control = CTComboBox
+	}
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Disable - disable param or make it invisible
+func (param *APIParam) Disable() {
+	param.Enabled = false
+	param.Visible = true
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Enable - enable param and make it visible
+func (param *APIParam) Enable() {
+	param.Enabled = true
+	param.Visible = true
 }

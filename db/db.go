@@ -195,7 +195,7 @@ const (
 )
 
 var MetaValues map[string]string = map[string]string{
-	MetaKeyVersion: "2018-04-25",
+	MetaKeyVersion: "2018-05-08",
 }
 
 // convertDB - convert DB from one version to another
@@ -353,6 +353,12 @@ func createDB(db *sql.DB) (err error) {
 				return
 			}
 		}
+	}
+
+	// Default test user, use this user everywhere until the user login system implemented
+	_, err = tx.Exec("INSERT INTO user(login,name,phone,position,comment) VALUES(?,?,?,?,?)", "coder", "Test Coder", "+7 923 241-44-42", "coder", "Default test user for the testing period until user login system implemented.")
+	if err != nil {
+		return
 	}
 
 	return

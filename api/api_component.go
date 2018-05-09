@@ -3,8 +3,8 @@ package api
 ///////////////////////////////////////////////////////////////////////////////
 // APIComponentSection
 type APIComponentSection struct {
-	Params []int64 `json:"params,omitempty"` // ID параметров из массива params этого участка
-	Parts  []int64 `json:"parts,omitempty"`  // ID частей из массива parts этого участка
+	Params []int64 `json:"params,omitempty"` // ID типов параметров из массива params этого участка
+	Parts  []int64 `json:"parts,omitempty"`  // ID типов частей из массива parts этого участка
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -6,12 +6,12 @@ import (
 )
 
 type DBParamValue struct {
-	NewValue  float64            // If NewValue = -1 and Value list is empty, parameter is not available
-	ValueList map[float64]string // If value list is empty and NewValue is not -1 the parameter could have any value
+	Value     float64            // If Value = -1 and Value list is empty, parameter is not available
+	ValueList map[float64]string // If value list is empty and Value is not -1 the parameter could have any value
 }
 
 type DBPartNomenclatureValue struct {
-	NewID  *int64
+	ID     *int64
 	IDList []*int64
 }
 
@@ -128,7 +128,7 @@ func GetParamPartValues(regionID int64, localParams map[int64]float64, localPart
 		// Find current param value in the list of possible values
 		_, ok := v.ValueList[param.Value]
 		if ok {
-			v.NewValue = param.Value
+			v.Value = param.Value
 		} else {
 			// Get the first value from the list
 			var k float64
@@ -138,15 +138,15 @@ func GetParamPartValues(regionID int64, localParams map[int64]float64, localPart
 				break
 			}
 			if found {
-				v.NewValue = k
+				v.Value = k
 			} else { // If no values, set -1 in case of the dependences, don't change the value, if there were no dependencies
 				if sqlJoin == "" {
-					v.NewValue = param.Value
+					v.Value = param.Value
 				} else {
-					v.NewValue = -1
+					v.Value = -1
 				}
 			}
-			param.Value = v.NewValue
+			param.Value = v.Value
 		}
 
 		resParams[param.ParamTypeID] = v
@@ -163,7 +163,7 @@ func GetParamPartValues(regionID int64, localParams map[int64]float64, localPart
 	for rows.Next() {
 		var partValue DBPartNomenclatureValue
 		var tpartID int64
-		err = rows.Scan(&tpartID, &partValue.NewID)
+		err = rows.Scan(&tpartID, &partValue.ID)
 		if err != nil {
 			return
 		}
@@ -171,10 +171,10 @@ func GetParamPartValues(regionID int64, localParams map[int64]float64, localPart
 		// Replace DB param value by local value
 		localValue, ok := localParts[tpartID]
 		if ok {
-			if partValue.NewID == nil {
-				partValue.NewID = new(int64)
+			if partValue.ID == nil {
+				partValue.ID = new(int64)
 			}
-			*partValue.NewID = localValue
+			*partValue.ID = localValue
 		}
 
 		resParts[tpartID] = partValue
@@ -235,11 +235,11 @@ func GetParamPartValues(regionID int64, localParams map[int64]float64, localPart
 		// Change value of part nomenclature if the current value not in the list
 		var found bool
 		for _, v := range partValue.IDList {
-			if v == nil && partValue.NewID == nil {
+			if v == nil && partValue.ID == nil {
 				found = true
 				break
 			}
-			if v != nil && partValue.NewID != nil && *v == *partValue.NewID {
+			if v != nil && partValue.ID != nil && *v == *partValue.ID {
 				found = true
 				break
 			}
@@ -248,15 +248,15 @@ func GetParamPartValues(regionID int64, localParams map[int64]float64, localPart
 		if !found {
 			if len(partValue.IDList) > 0 {
 				if partValue.IDList[0] == nil {
-					partValue.NewID = nil
+					partValue.ID = nil
 				} else {
-					if partValue.NewID == nil {
-						partValue.NewID = new(int64)
+					if partValue.ID == nil {
+						partValue.ID = new(int64)
 					}
-					*partValue.NewID = *partValue.IDList[0]
+					*partValue.ID = *partValue.IDList[0]
 				}
 			} else {
-				partValue.NewID = nil
+				partValue.ID = nil
 			}
 		}
 
@@ -288,14 +288,14 @@ func WriteParamPartValues(regionID int64, params map[int64]DBParamValue, parts m
 
 	// Param values
 	for tparamID, paramValue := range params {
-		_, err = tx.Exec("UPDATE param SET value=? WHERE region_id=? AND tparam_id=?", paramValue.NewValue, regionID, tparamID)
+		_, err = tx.Exec("UPDATE param SET value=? WHERE region_id=? AND tparam_id=?", paramValue.Value, regionID, tparamID)
 		if err != nil {
 			return
 		}
 	}
 	// Part values
 	for tpartID, partValue := range parts {
-		_, err = tx.Exec("UPDATE part SET nomenclature_id=? WHERE tpart_id=? AND component_id IN (SELECT id FROM component WHERE region_id=?)", partValue.NewID, tpartID, regionID)
+		_, err = tx.Exec("UPDATE part SET nomenclature_id=? WHERE tpart_id=? AND component_id IN (SELECT id FROM component WHERE region_id=?)", partValue.ID, tpartID, regionID)
 		if err != nil {
 			return
 		}
