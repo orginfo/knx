@@ -65,9 +65,6 @@ type Param struct {
 	// If the slice is empty or contains only 1 value, the parameter can be modified by user to any value
 	// If the slice contains more than 1 value, the parameter can only be selected from the given list of values
 	Values []ParamValue
-
-	// Region types, where the parameter make is available
-	RegionTypes []RegionTypeID
 }
 
 // Шаг столбов, разбиение
@@ -93,85 +90,20 @@ const (
 var Params = [...]Param{
 	PTTotalLength: {
 		Name: "Длина участка, в м",
-		RegionTypes: []RegionTypeID{
-			RTProflistFenceVer,
-			RTProflistFenceHor,
-			RTBattenFenceVer,
-			RTBattenFenceHor,
-			RTKnxProflistFence,
-			RTKnxBattenFence,
-			RTKnxEcoProflistFence,
-			RTKnxEcoBattenFence,
-			RT2D,
-			RT3D,
-			RTGrandLine,
-		},
 	},
 	PTTotalHeight: {
 		Name: "Высота забора, в м",
-		RegionTypes: []RegionTypeID{
-			RTProflistFenceVer,
-			RTProflistFenceHor,
-			RTBattenFenceVer,
-			RTBattenFenceHor,
-			RTKnxProflistFence,
-			RTKnxBattenFence,
-			RTKnxEcoProflistFence,
-			RTKnxEcoBattenFence,
-			RT2D,
-			RT3D,
-			RTGrandLine,
-		},
 	},
 	PTBottomSpace: {
 		Name: "Зазор снизу, в мм",
-		RegionTypes: []RegionTypeID{
-			RTProflistFenceVer,
-			RTProflistFenceHor,
-			RTBattenFenceVer,
-			RTBattenFenceHor,
-			RTKnxProflistFence,
-			RTKnxBattenFence,
-			RTKnxEcoProflistFence,
-			RTKnxEcoBattenFence,
-			RT2D,
-			RT3D,
-			RTGrandLine,
-		},
 	},
 	PTUpSpace: {
 		Name: "Выступ стоблов сверху, в мм",
-		RegionTypes: []RegionTypeID{
-			RTProflistFenceVer,
-			RTProflistFenceHor,
-			RTBattenFenceVer,
-			RTBattenFenceHor,
-			RTKnxProflistFence,
-			RTKnxBattenFence,
-			RTKnxEcoProflistFence,
-			RTKnxEcoBattenFence,
-			RT2D,
-			RT3D,
-			RTGrandLine,
-		},
 	},
 	PTColumnDepth: {
 		Name: "Заглубление столбов, в мм",
 		Values: []ParamValue{
 			{Value: 1}, // TODO: Ask for default value
-		},
-		RegionTypes: []RegionTypeID{
-			RTProflistFenceVer,
-			RTProflistFenceHor,
-			RTBattenFenceVer,
-			RTBattenFenceHor,
-			RTKnxProflistFence,
-			RTKnxBattenFence,
-			RTKnxEcoProflistFence,
-			RTKnxEcoBattenFence,
-			RT2D,
-			RT3D,
-			RTGrandLine,
 		},
 	},
 	PTColumnStepLength: {
@@ -179,19 +111,6 @@ var Params = [...]Param{
 		Values: []ParamValue{
 			{Value: 2},
 			{Value: 3},
-		},
-		RegionTypes: []RegionTypeID{
-			RTProflistFenceVer,
-			RTProflistFenceHor,
-			RTBattenFenceVer,
-			RTBattenFenceHor,
-			RTKnxProflistFence,
-			RTKnxBattenFence,
-			RTKnxEcoProflistFence,
-			RTKnxEcoBattenFence,
-			RT2D,
-			RT3D,
-			RTGrandLine,
 		},
 	},
 	PTColumnStepType: {
@@ -204,19 +123,6 @@ var Params = [...]Param{
 				},
 			},
 		},
-		RegionTypes: []RegionTypeID{
-			RTProflistFenceVer,
-			RTProflistFenceHor,
-			RTBattenFenceVer,
-			RTBattenFenceHor,
-			RTKnxProflistFence,
-			RTKnxBattenFence,
-			RTKnxEcoProflistFence,
-			RTKnxEcoBattenFence,
-			RT2D,
-			RT3D,
-			RTGrandLine,
-		},
 	},
 	PTColumnStepSpace: {
 		Prio: 1,
@@ -224,19 +130,6 @@ var Params = [...]Param{
 		Values: []ParamValue{
 			{Value: ColumnStepSpaceEnd, Name: "Остаток в конце"},
 			{Value: ColumnStepSpaceStart, Name: "Остаток в начале"},
-		},
-		RegionTypes: []RegionTypeID{
-			RTProflistFenceVer,
-			RTProflistFenceHor,
-			RTBattenFenceVer,
-			RTBattenFenceHor,
-			RTKnxProflistFence,
-			RTKnxBattenFence,
-			RTKnxEcoProflistFence,
-			RTKnxEcoBattenFence,
-			RT2D,
-			RT3D,
-			RTGrandLine,
 		},
 	},
 	PTColumnInstallMethod: {
@@ -246,19 +139,6 @@ var Params = [...]Param{
 			{Value: ColumnInstallMethodButting, Name: "Бутирование"},
 			{Value: ColumnInstallMethodHILST, Name: "HILST"},
 			{Value: ColumnInstallMethodFlanges, Name: "Фланцы"},
-		},
-		RegionTypes: []RegionTypeID{
-			RTProflistFenceVer,
-			RTProflistFenceHor,
-			RTBattenFenceVer,
-			RTBattenFenceHor,
-			RTKnxProflistFence,
-			RTKnxBattenFence,
-			RTKnxEcoProflistFence,
-			RTKnxEcoBattenFence,
-			RT2D,
-			RT3D,
-			RTGrandLine,
 		},
 	},
 	PTColumnSize: {
@@ -271,19 +151,6 @@ var Params = [...]Param{
 			{Value: 3, Name: "60x60x3"},
 			{Value: 4, Name: "80x80x3"},
 			{Value: 5, Name: "100x100x5"},
-		},
-		RegionTypes: []RegionTypeID{
-			RTProflistFenceVer,
-			RTProflistFenceHor,
-			RTBattenFenceVer,
-			RTBattenFenceHor,
-			RTKnxProflistFence,
-			RTKnxBattenFence,
-			RTKnxEcoProflistFence,
-			RTKnxEcoBattenFence,
-			RT2D,
-			RT3D,
-			RTGrandLine,
 		},
 	},
 	PTBoolInstallColumns: { // Галочка "Монтаж" столбов
@@ -307,9 +174,6 @@ var Params = [...]Param{
 			},
 			{Value: 1, Name: BoolParamName},
 		},
-		RegionTypes: []RegionTypeID{
-			RTProflistFenceVer,
-		},
 	},
 	PTBoolColumnCover: {
 		Name:        "Заглушки",
@@ -317,9 +181,6 @@ var Params = [...]Param{
 		Values: []ParamValue{
 			{Value: 0, Name: BoolParamName},
 			{Value: 1, Name: BoolParamName},
-		},
-		RegionTypes: []RegionTypeID{
-			RTProflistFenceVer,
 		},
 	},
 	PTColorColumnPaint: {
@@ -337,9 +198,6 @@ var Params = [...]Param{
 			{Value: 0, Name: BoolParamName},
 			{Value: 1, Name: BoolParamName},
 		},
-		RegionTypes: []RegionTypeID{
-			RTProflistFenceVer,
-		},
 	},
 	PTProfileSheetThickness: {
 		Name: "Толщина профлиста, мм",
@@ -352,10 +210,6 @@ var Params = [...]Param{
 			{Value: 0.65},
 			{Value: 0.7},
 		},
-		RegionTypes: []RegionTypeID{
-			RTProflistFenceVer,
-			RTProflistFenceHor,
-		},
 	},
 	PTProfileSheetType: {
 		Name:        "Тип",
@@ -366,10 +220,6 @@ var Params = [...]Param{
 			{Value: 2, Name: "Мп20"},
 			{Value: 3, Name: "С21"},
 			{Value: 4, Name: "С44"},
-		},
-		RegionTypes: []RegionTypeID{
-			RTProflistFenceVer,
-			RTProflistFenceHor,
 		},
 	},
 	PTBoolInstallCanvas: { // Галочка "Монтаж" забора
@@ -399,9 +249,6 @@ var Params = [...]Param{
 				},
 			},
 		},
-		RegionTypes: []RegionTypeID{
-			RTProflistFenceVer,
-		},
 	},
 	PTColorCanvas: {
 		Prio:        1,
@@ -426,9 +273,6 @@ var Params = [...]Param{
 		Values: []ParamValue{
 			{Value: 0, Name: ColorParamName},
 		},
-		RegionTypes: []RegionTypeID{
-			RTProflistFenceVer,
-		},
 	},
 	PTBoolFix: {
 		Name:        "Крепеж",
@@ -443,9 +287,6 @@ var Params = [...]Param{
 			},
 			{Value: 1, Name: BoolParamName},
 		},
-		RegionTypes: []RegionTypeID{
-			RTProflistFenceVer,
-		},
 	},
 	PTHStickCount: {
 		Name:        "Количество",
@@ -454,26 +295,17 @@ var Params = [...]Param{
 			{Value: 2},
 			{Value: 3},
 		},
-		RegionTypes: []RegionTypeID{
-			RTProflistFenceVer,
-		},
 	},
 	PTHStickBottomSpace: {
 		Name: "Нижняя прожилина из низа профнастила, мм",
 		Values: []ParamValue{
 			{Value: 300},
 		},
-		RegionTypes: []RegionTypeID{
-			RTProflistFenceVer,
-		},
 	},
 	PTHStickUpSpace: {
 		Name: "Верхняя прожилина от верха столбов, мм",
 		Values: []ParamValue{
 			{Value: 250},
-		},
-		RegionTypes: []RegionTypeID{
-			RTProflistFenceVer,
 		},
 	},
 	PTHStickLeghth: { // TODO: Ask, Is in possible to enter any value??
@@ -485,9 +317,6 @@ var Params = [...]Param{
 			{Value: 4},
 			{Value: 6},
 		},
-		RegionTypes: []RegionTypeID{
-			RTProflistFenceVer,
-		},
 	},
 	PTHStickSize: {
 		Name:        "Материалы",
@@ -495,9 +324,6 @@ var Params = [...]Param{
 		Values: []ParamValue{
 			{Value: 0, Name: "40x20x1.5"},
 			{Value: 1, Name: "40x40x2"},
-		},
-		RegionTypes: []RegionTypeID{
-			RTProflistFenceVer,
 		},
 	},
 	PTBoolInstallHStick: { // Галочка "Монтаж" прожилин
@@ -515,9 +341,6 @@ var Params = [...]Param{
 		Values: []ParamValue{
 			{Value: 0, Name: ColorParamName},
 		},
-		RegionTypes: []RegionTypeID{
-			RTProflistFenceVer,
-		},
 	},
 	PTBoolHStickPaint: {
 		Name:        "Окрашивание",
@@ -531,9 +354,6 @@ var Params = [...]Param{
 				},
 			},
 			{Value: 1, Name: BoolParamName},
-		},
-		RegionTypes: []RegionTypeID{
-			RTProflistFenceVer,
 		},
 	},
 }

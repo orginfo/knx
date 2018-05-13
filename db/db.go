@@ -68,7 +68,8 @@ var sqlDeclarations []string = []string{
 
 	`CREATE TABLE cn_tparam_tregion (
     tparam_id     INTEGER REFERENCES tparam(id)  NOT NULL,
-    tregion_id    INTEGER REFERENCES tregion(id) NOT NULL )`,
+    tregion_id    INTEGER REFERENCES tregion(id) NOT NULL,
+    tcomponent_id INTEGER REFERENCES tcomponent(id) NOT NULL )`,
 
 	`CREATE TABLE tparamvalue (
     tparam_id     INTEGER REFERENCES tparam(id) NOT NULL,
@@ -195,7 +196,7 @@ const (
 )
 
 var MetaValues map[string]string = map[string]string{
-	MetaKeyVersion: "2018-05-08",
+	MetaKeyVersion: "2018-05-13",
 }
 
 // convertDB - convert DB from one version to another
@@ -240,7 +241,7 @@ func createDB(db *sql.DB) (err error) {
 		}
 	}
 
-	// [tparam] [tparamvalue] [cn_tparam_tregion]
+	// [tparam] [tparamvalue]
 	for id, tparam := range calc.Params {
 		_, err = tx.Exec("INSERT INTO tparam(id,prio,name,description) VALUES(?,?,?,?)", id, tparam.Prio, tparam.Name, tparam.Description)
 		if err != nil {
@@ -262,12 +263,6 @@ func createDB(db *sql.DB) (err error) {
 			}
 
 			_, err = tx.Exec("INSERT INTO tparamvalue(tparam_id,value,name) VALUES(?,?,?)", id, value.Value, value.Name)
-			if err != nil {
-				return
-			}
-		}
-		for _, rt := range tparam.RegionTypes {
-			_, err = tx.Exec("INSERT INTO cn_tparam_tregion(tparam_id,tregion_id) VALUES(?,?)", id, rt)
 			if err != nil {
 				return
 			}
@@ -328,12 +323,20 @@ func createDB(db *sql.DB) (err error) {
 		}
 	}
 
-	// [cn_tregion_tcomponent]
+	// [cn_tregion_tcomponent] [cn_tparam_tregion]
 	for id, tregion := range calc.Regions {
 		for _, compID := range tregion.Components {
 			_, err = tx.Exec("INSERT INTO cn_tregion_tcomponent(tregion_id,tcomponent_id) VALUES(?,?)", id, compID)
 			if err != nil {
 				return
+			}
+
+			c := calc.Components[compID]
+			for _, paramID := range c.Params {
+				_, err = tx.Exec("INSERT INTO cn_tparam_tregion(tparam_id,tregion_id,tcomponent_id) VALUES(?,?,?)", paramID, id, compID)
+				if err != nil {
+					return
+				}
 			}
 		}
 	}

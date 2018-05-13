@@ -351,23 +351,30 @@ func GetRegion(request []string, params map[string][]string) (answer Answer) {
 		defer rows.Close()
 		for rows.Next() {
 			var ct APIComponentType
-			var p APIPart
+			var partID *int64
+			var partName *string
+			var partCalculationTypeID *int64
 			var c APIComponent = APIComponent{ComponentType: &ct}
-			err = rows.Scan(&c.ID, &ct.ID, &ct.Name, &p.ID, &p.Name, &p.CalculationTypeID)
+			err = rows.Scan(&c.ID, &ct.ID, &ct.Name, &partID, &partName, &partCalculationTypeID)
 			if err != nil {
 				return
 			}
-			if p0, ok := res.Parts[p.ID]; ok {
-				p0.Name = p.Name
-				p0.CalculationTypeID = p.CalculationTypeID
-				res.Parts[p.ID] = p0
-			}
+
 			if _, ok := res.Components[c.ID]; !ok {
 				res.Components[c.ID] = c
 			}
-			c0 := res.Components[c.ID]
-			c0.PartTypes = append(c0.PartTypes, p.APIPartType)
-			res.Components[c.ID] = c0
+
+			if partID != nil {
+				p := APIPartType{ID: *partID, Name: *partName, CalculationTypeID: *partCalculationTypeID}
+				if p0, ok := res.Parts[p.ID]; ok {
+					p0.Name = p.Name
+					p0.CalculationTypeID = p.CalculationTypeID
+					res.Parts[p.ID] = p0
+				}
+				c0 := res.Components[c.ID]
+				c0.PartTypes = append(c0.PartTypes, p)
+				res.Components[c.ID] = c0
+			}
 		}
 		err = rows.Err()
 		return
