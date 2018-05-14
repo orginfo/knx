@@ -201,4 +201,6 @@ var F map[string]HTTPCallbackSet = map[string]HTTPCallbackSet{
 
 	"color_schemes":     {GetColorSchemes, PutColorScheme, NotImplemented, NotImplemented},
 	"color_schemes<id>": {GetColorScheme, NotImplemented, PostColorSchemes, DeleteColorScheme},
+
+	"import_nomenclature": {GetImportNomenclature, NotImplemented, NotImplemented, NotImplemented},
 }
