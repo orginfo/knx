@@ -72,8 +72,8 @@ func ImportNomenclature(filePath string) (err error) {
 
 	var nomenclatureType string
 	var fields []string
-
 	var nomenclatureID int64
+
 	lineCount := 0
 	for {
 		record, error := reader.Read()
@@ -96,20 +96,19 @@ func ImportNomenclature(filePath string) (err error) {
 			}
 			// Получаем тип номенклатуры
 			nomenclatureType = record[0]
-
-			// Формируем запрос для вставки типа номенклатуры
-			request := fmt.Sprintf("http://localhost:8080/v0/nomenclature_types?name=%s", url.QueryEscape(nomenclatureType))
-
-			nomenclatureID, err = putRequest(request, nil)
-			fmt.Println(nomenclatureID)
-			if err != nil {
-				return
-			}
 		} else if lineCount == 1 {
 			// Вторая строка файла содержит названия полей таблицы
 			fields = record
 			if len(record) == 0 {
 				err = fmt.Errorf("Файл '%s' во второй строке должен содержать список полей. Список полей пуст.", filePath)
+				return
+			}
+
+			// Формируем запрос для вставки типа номенклатуры. Задаем параметр "use_fields"
+			request := fmt.Sprintf("http://localhost:8080/v0/nomenclature_types?name=%s&use_fields=%s", url.QueryEscape(nomenclatureType), strings.Join(fields, ","))
+
+			nomenclatureID, err = putRequest(request, nil)
+			if err != nil {
 				return
 			}
 		} else {
@@ -129,7 +128,6 @@ func ImportNomenclature(filePath string) (err error) {
 			}
 
 			values := url.Values{}
-
 			for i, field := range fields {
 				if field == "price" {
 					// TODO: Игнорируем поле price. Это временное решение, т.к. сейчас заполяняем только 2 таблицы: tnomenclature и nomenclature, которые не содержат этого поля.
@@ -145,7 +143,6 @@ func ImportNomenclature(filePath string) (err error) {
 			}
 
 			request := fmt.Sprintf("http://localhost:8080/v0/nomenclature_types/%d/nomenclature?%s", nomenclatureID, values.Encode())
-			fmt.Println(request)
 
 			_, err = putRequest(request, nil)
 			if err != nil {
